@@ -1,0 +1,11 @@
+[adapters]
+llm = "claude"      # "claude" requires ANTHROPIC_API_KEY; "log" prints to stdout
+messaging = "log"   # logs instead of sending via WhatsApp
+storage = "json"    # one JSON file per conversation in data/conversations/
+
+[json_storage]
+path = "data/conversations"
+
+[claude]
+model = "claude-sonnet-4-6"
+api_key_env = "ANTHROPIC_API_KEY"
