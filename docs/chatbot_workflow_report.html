@@ -1,0 +1,779 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manager AI Chatbot Workflow Report</title>
+  <style>
+    :root {
+      --bg: #f4efe6;
+      --paper: #fffdf8;
+      --ink: #1c2430;
+      --muted: #5c6978;
+      --line: #dfd4c2;
+      --accent: #0f766e;
+      --accent-soft: #dff5f1;
+      --warn: #9a3412;
+      --warn-soft: #ffedd5;
+      --shadow: 0 18px 50px rgba(28, 36, 48, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(15, 118, 110, 0.10), transparent 28%),
+        radial-gradient(circle at top right, rgba(154, 52, 18, 0.10), transparent 24%),
+        linear-gradient(180deg, #f8f3ea 0%, var(--bg) 100%);
+    }
+
+    .shell {
+      width: min(1180px, calc(100vw - 32px));
+      margin: 24px auto 40px;
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .nav,
+    .panel {
+      background: rgba(255, 253, 248, 0.94);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .nav {
+      position: sticky;
+      top: 20px;
+      padding: 22px 20px;
+    }
+
+    .brand {
+      margin-bottom: 18px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .eyebrow {
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 0 0 8px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.05;
+    }
+
+    .subtitle {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .nav a {
+      display: block;
+      text-decoration: none;
+      color: var(--ink);
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      margin: 2px 0;
+    }
+
+    .nav a:hover {
+      background: var(--accent-soft);
+    }
+
+    .content {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .panel {
+      padding: 28px;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 26px;
+    }
+
+    h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+
+    p, li {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    ul {
+      margin: 10px 0 0 18px;
+      padding: 0;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .stat-grid,
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .stat,
+    .card,
+    .step,
+    .note {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+      background: #fffdfa;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 24px;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    .label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    .flow {
+      display: grid;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .step {
+      position: relative;
+      padding-left: 66px;
+    }
+
+    .step-index {
+      position: absolute;
+      left: 16px;
+      top: 16px;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    code {
+      font-family: "Consolas", "Courier New", monospace;
+      font-size: 0.93em;
+      background: #f5f2ec;
+      padding: 2px 6px;
+      border-radius: 6px;
+      color: #223042;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      margin-top: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 720px;
+    }
+
+    th, td {
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+      padding: 12px 10px;
+      vertical-align: top;
+      font-size: 14px;
+    }
+
+    th {
+      color: var(--ink);
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      margin: 0 6px 6px 0;
+    }
+
+    .warn {
+      background: var(--warn-soft);
+      border-color: #f5c9a8;
+    }
+
+    .warn .label,
+    .warn h3 {
+      color: var(--warn);
+    }
+
+    details {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px 16px;
+      background: #fffdfa;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: bold;
+      color: var(--ink);
+    }
+
+    .footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      padding: 8px 0 0;
+    }
+
+    @media (max-width: 980px) {
+      .shell,
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .nav {
+        position: static;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="nav">
+      <div class="brand">
+        <p class="eyebrow">Current State Report</p>
+        <h1>Chatbot Workflow</h1>
+        <p class="subtitle">
+          A code-grounded explanation of how the current En Red Rosario chatbot flow works today:
+          message ingestion, routing, extraction, reply generation, persistence, and observability.
+        </p>
+      </div>
+      <a href="#overview">Overview</a>
+      <a href="#runtime">Runtime Path</a>
+      <a href="#message-shape">Message Handling</a>
+      <a href="#classification">Intent Classification</a>
+      <a href="#job-routing">Thread And Job Routing</a>
+      <a href="#extraction">Structured Data Extraction</a>
+      <a href="#reply">Reply Construction</a>
+      <a href="#states">State Evolution</a>
+      <a href="#events">Trace And Persistence</a>
+      <a href="#config">Configuration Matrix</a>
+      <a href="#gaps">Current Gaps</a>
+    </aside>
+
+    <main class="content">
+      <section class="panel hero" id="overview">
+        <div>
+          <p class="eyebrow">Summary</p>
+          <h2>What The Workflow Is Today</h2>
+          <p>
+            The chatbot is now built around a <code>ContactThreadState</code> that may contain multiple
+            <code>JobState</code> records. Each inbound WhatsApp-style message is normalized, classified,
+            assigned to a job, passed through structured extraction, optionally through quote, scheduling,
+            or closure logic, then persisted back to storage together with an event trace.
+          </p>
+          <p>
+            The current flow is a hybrid. The orchestration and state transitions are deterministic Python
+            logic, while some high-value interpretation layers can now be LLM-backed:
+            intent classification, structured extraction, and reply drafting.
+          </p>
+          <div>
+            <span class="pill">Threads can hold multiple jobs</span>
+            <span class="pill">Messages become events</span>
+            <span class="pill">Extraction updates job state</span>
+            <span class="pill">Replies are generated after workflow logic</span>
+            <span class="pill">Scheduling remains mocked</span>
+          </div>
+        </div>
+        <div class="stat-grid">
+          <div class="stat">
+            <strong>1</strong>
+            <span>Primary workflow orchestrator: <code>workflow_agent.py</code></span>
+          </div>
+          <div class="stat">
+            <strong>3</strong>
+            <span>Optional LLM-backed modules: classifier, extraction, reply generation</span>
+          </div>
+          <div class="stat">
+            <strong>2</strong>
+            <span>Main persistence streams: <code>history</code> and <code>events</code></span>
+          </div>
+          <div class="stat">
+            <strong>6+</strong>
+            <span>Major event families: intake, routing, extraction, quote, schedule, closure, escalation</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="runtime">
+        <p class="eyebrow">End-To-End</p>
+        <h2>Runtime Message Path</h2>
+        <div class="flow">
+          <div class="step">
+            <div class="step-index">1</div>
+            <h3>Inbound message enters the workflow</h3>
+            <p>
+              The NiceGUI app or another caller creates an <code>IncomingMessage</code> and passes it into
+              <code>Agent.handle_incoming_message(...)</code>. This is the main entry point for the modern workflow.
+            </p>
+          </div>
+          <div class="step">
+            <div class="step-index">2</div>
+            <h3>The message is normalized</h3>
+            <p>
+              <code>ingest_message()</code> converts the inbound payload into a stored
+              <code>ConversationMessage</code> with role <code>user</code>, timestamps, attachments, and source metadata.
+              The message is immediately appended to thread history.
+            </p>
+          </div>
+          <div class="step">
+            <div class="step-index">3</div>
+            <h3>Intent and route are decided</h3>
+            <p>
+              The configured <code>MessageClassifierPort</code> determines an <code>IntentType</code>.
+              The workflow converts that intent into a normalized route such as
+              <code>evidence_intake</code>, <code>quote_management</code>, or <code>scheduling</code>.
+            </p>
+          </div>
+          <div class="step">
+            <div class="step-index">4</div>
+            <h3>A job is selected or created</h3>
+            <p>
+              The thread router either reuses the active job or opens a new one if the thread is dormant,
+              terminal, or clearly represents a new inquiry. This is where the system keeps thread-level
+              continuity but job-level separation.
+            </p>
+          </div>
+          <div class="step">
+            <div class="step-index">5</div>
+            <h3>Structured extraction updates the job</h3>
+            <p>
+              The configured extraction module reads the latest message and fills fields like name, address,
+              city, installation type, dimensions, constraints, and other scope details.
+            </p>
+          </div>
+          <div class="step">
+            <div class="step-index">6</div>
+            <h3>Business modules run</h3>
+            <p>
+              Quote logic, mocked scheduling, mocked reminder creation, and closure updates are applied depending
+              on the detected intent. If nothing else produces a reply, the workflow falls back to either asking
+              for the next missing field or confirming that the case is ready for internal review.
+            </p>
+          </div>
+          <div class="step">
+            <div class="step-index">7</div>
+            <h3>Reply text is finalized and persisted</h3>
+            <p>
+              Outbound messages are appended to thread history as assistant messages, event records are created,
+              thread and job status changes are recorded, and the full thread is saved to JSON storage.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="message-shape">
+        <p class="eyebrow">Input Layer</p>
+        <h2>How Messages Are Handled</h2>
+        <div class="card-grid">
+          <div class="card">
+            <h3>Inbound structure</h3>
+            <p>
+              The workflow expects <code>IncomingMessage</code> objects with phone, text, timestamp,
+              source, and optional attachments. This is the transport-facing shape.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Stored conversation shape</h3>
+            <p>
+              The inbound payload is transformed into <code>ConversationMessage</code>. That is the
+              durable message shape used in history, the NiceGUI timeline, and LLM context assembly.
+            </p>
+          </div>
+          <div class="card">
+            <h3>History behavior</h3>
+            <p>
+              Both user messages and assistant replies are appended into <code>thread.history</code>.
+              This means the stored thread becomes the canonical source for chat replay and for recent-context prompts.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Source metadata</h3>
+            <p>
+              The workflow preserves message source labels such as <code>whatsapp</code> and <code>workflow</code>,
+              which helps separate raw inbound input from system-generated replies.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="classification">
+        <p class="eyebrow">Interpretation</p>
+        <h2>How Intent Classification Works</h2>
+        <p>
+          Intent classification is delegated through <code>MessageClassifierPort</code>. The current system supports
+          two implementations:
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Mode</th>
+                <th>Module</th>
+                <th>How it works</th>
+                <th>Current use</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>heuristic</code></td>
+                <td><code>adapters/classifier/heuristic.py</code></td>
+                <td>Keyword-based rules decide intents such as quote, scheduling, evidence, and new inquiry.</td>
+                <td>Fallback or deterministic mode</td>
+              </tr>
+              <tr>
+                <td><code>llm</code></td>
+                <td><code>adapters/classifier/llm.py</code></td>
+                <td>PydanticAI asks the model to classify the latest client turn using recent thread history.</td>
+                <td>Preferred for stronger conversation understanding</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          After classification, the workflow maps the intent into a route:
+          <code>quote_management</code>, <code>scheduling</code>, <code>closure_followup</code>,
+          <code>evidence_intake</code>, or <code>mixed</code>. That route is stored as a first-class event.
+        </p>
+      </section>
+
+      <section class="panel" id="job-routing">
+        <p class="eyebrow">Thread Logic</p>
+        <h2>How Threads And Jobs Are Routed</h2>
+        <p>
+          A thread is the persistent contact record. A job is the work unit inside that thread. The router
+          uses explicit rules from <code>thread_router.py</code>:
+        </p>
+        <ul>
+          <li>If no active job exists, create one.</li>
+          <li>If a new inquiry arrives while the active job is terminal, create a new job.</li>
+          <li>If a new inquiry arrives while there is already an active job, create a new job.</li>
+          <li>If the active job is older than 45 days, open a new job.</li>
+          <li>Otherwise keep using the active job.</li>
+        </ul>
+        <p>
+          This means the system currently favors opening a new job aggressively for fresh inquiries, while simpler
+          follow-up messages remain attached to the active job.
+        </p>
+      </section>
+
+      <section class="panel" id="extraction">
+        <p class="eyebrow">Data Capture</p>
+        <h2>How Data Is Extracted</h2>
+        <p>
+          Structured extraction updates the current <code>JobState</code>. The configured extractor works through
+          <code>StructuredExtractionPort</code>.
+        </p>
+        <div class="card-grid">
+          <div class="card">
+            <h3>Heuristic extraction</h3>
+            <p>
+              Regex and keyword rules parse names, addresses, cities, dimensions, urgency, constraints, and attachment
+              evidence. This is deterministic and cheap, but shallow.
+            </p>
+          </div>
+          <div class="card">
+            <h3>LLM extraction</h3>
+            <p>
+              The model receives the current job context and the latest client message, then returns a structured
+              update with fields like <code>contact_name</code>, <code>address</code>,
+              <code>installation_type</code>, dimensions, and constraints.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Missing field logic</h3>
+            <p>
+              After extraction, <code>refresh_evidence_status()</code> recomputes missing fields. The current required
+              list is contact name, address, city, installation type, width, and height.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Status impact</h3>
+            <p>
+              If required data is still missing, the job becomes <code>AWAITING_EVIDENCE</code>.
+              If all required data is present, the job moves to <code>SCOPING</code>.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="reply">
+        <p class="eyebrow">Outbound Logic</p>
+        <h2>How The Next Message Is Constructed</h2>
+        <p>
+          The workflow does not start by asking the LLM “what should I say?” Instead, it first resolves the business
+          situation, then drafts the reply from that state. The current priority order is:
+        </p>
+        <div class="flow">
+          <div class="step">
+            <div class="step-index">A</div>
+            <h3>Disqualification reply</h3>
+            <p>
+              If the service is not an En Red Rosario case, the workflow sends the fixed
+              <code>NOT_QUALIFIED_MESSAGE</code>.
+            </p>
+          </div>
+          <div class="step">
+            <div class="step-index">B</div>
+            <h3>Quote reply</h3>
+            <p>
+              If the intent is quote-related, quote logic may generate a rough or negotiated quote response.
+              Right now the quote itself still comes from a mocked drafting adapter.
+            </p>
+          </div>
+          <div class="step">
+            <div class="step-index">C</div>
+            <h3>Scheduling or closure reply</h3>
+            <p>
+              Scheduling and closure modules return canned replies tied to mocked external actions.
+            </p>
+          </div>
+          <div class="step">
+            <div class="step-index">D</div>
+            <h3>Fallback workflow reply</h3>
+            <p>
+              If no other module produced an answer, the workflow either asks for the next missing field or says the case
+              is ready for internal review. This is where the configured reply generator can polish the message.
+            </p>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Reply mode</th>
+                <th>Module</th>
+                <th>Behavior</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>rules</code></td>
+                <td><code>adapters/reply_generation/rules.py</code></td>
+                <td>Returns the fallback text unchanged.</td>
+              </tr>
+              <tr>
+                <td><code>llm</code></td>
+                <td><code>adapters/reply_generation/llm.py</code></td>
+                <td>Uses recent history plus current job state to rewrite the fallback into a more natural WhatsApp reply.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          Important nuance: the LLM reply generator is currently applied only to the “no other reply was created” branch.
+          Quote, scheduling, payment, and disqualification messages still come from deterministic business logic.
+        </p>
+      </section>
+
+      <section class="panel" id="states">
+        <p class="eyebrow">State Model</p>
+        <h2>How State Evolves During The Conversation</h2>
+        <div class="card-grid">
+          <div class="card">
+            <h3>Thread state</h3>
+            <p>
+              Thread status tracks high-level conversation posture: <code>ACTIVE</code>,
+              <code>WAITING_ON_CUSTOMER</code>, <code>WAITING_ON_INTERNAL</code>,
+              <code>ESCALATED</code>, or <code>DORMANT</code>.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Job state</h3>
+            <p>
+              Job status tracks the work unit itself: qualifying, awaiting evidence, scoping, quote sent,
+              negotiating, scheduled, completed, payment pending, closed, disqualified, and more.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Typical intake progression</h3>
+            <p>
+              New job → qualifying → awaiting evidence → scoping → estimate ready. That is the most common
+              path when the client is still sharing basic intake information.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Escalation triggers</h3>
+            <p>
+              The workflow escalates when there are multiple active jobs, multiple stakeholders, or active negotiation.
+              Escalations push the thread into <code>ESCALATED</code> and are stored in both flags and events.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="events">
+        <p class="eyebrow">Observability</p>
+        <h2>How Trace And Persistence Work</h2>
+        <p>
+          Every inbound turn writes both message history and workflow events into the JSON thread file. This is the
+          basis for the NiceGUI technical trace panel.
+        </p>
+        <div class="card-grid">
+          <div class="card">
+            <h3>Message history</h3>
+            <p>
+              Stored under <code>thread.history</code>. Includes user and assistant messages in chronological order.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Event stream</h3>
+            <p>
+              Stored under <code>thread.events</code>. Includes <code>incoming_message</code>,
+              <code>intent_detected</code>, <code>route_selected</code>, extraction changes,
+              outbound messages, status changes, quote events, scheduling events, and escalations.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Storage model</h3>
+            <p>
+              The default interactive setup writes one JSON file per thread under <code>data/conversations/</code>.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Persistence point</h3>
+            <p>
+              Persistence happens at the end of <code>handle_incoming_message()</code> through <code>_persist()</code>,
+              after messages and event records have already been attached to the in-memory thread.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="config">
+        <p class="eyebrow">Wiring</p>
+        <h2>Current Configuration Matrix</h2>
+        <p>
+          The agent is wired from TOML via <code>build_agent()</code> in <code>config.py</code>. The NiceGUI app now
+          defaults to <code>config/dev-ui-llm.toml</code> unless overridden by the <code>MANAGER_AI_CONFIG</code> env var.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Dependency</th>
+                <th>Current UI config</th>
+                <th>Meaning</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>LLM</td>
+                <td><code>pydantic_ai</code></td>
+                <td>Real Anthropic-backed model calls through PydanticAI</td>
+              </tr>
+              <tr>
+                <td>Message classifier</td>
+                <td><code>llm</code></td>
+                <td>Intent classification by model</td>
+              </tr>
+              <tr>
+                <td>Structured extraction</td>
+                <td><code>llm</code></td>
+                <td>Field extraction by model</td>
+              </tr>
+              <tr>
+                <td>Reply generation</td>
+                <td><code>llm</code></td>
+                <td>Natural reply rewriting on fallback branches</td>
+              </tr>
+              <tr>
+                <td>Quote drafting</td>
+                <td>mocked</td>
+                <td>Still deterministic placeholder behavior</td>
+              </tr>
+              <tr>
+                <td>Scheduling</td>
+                <td>mocked</td>
+                <td>No real calendar integration yet</td>
+              </tr>
+              <tr>
+                <td>Reminders</td>
+                <td>mocked</td>
+                <td>No real reminder delivery yet</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel warn" id="gaps">
+        <p class="eyebrow">Reality Check</p>
+        <h2>Important Current Gaps And Caveats</h2>
+        <ul>
+          <li>The workflow is modular, but not every module is equally intelligent yet. Quote, scheduling, and reminders are still placeholders.</li>
+          <li>Reply generation currently only polishes fallback evidence/scoping messages. Some other branches still answer with hardcoded text.</li>
+          <li>The service-request gate is still deterministic and keyword-driven.</li>
+          <li>The current extraction pipeline is message-centric, not full-thread synthesis. It updates from the latest turn, not from a global thread re-read.</li>
+          <li>The router uses simple heuristics for deciding when a new job should be created.</li>
+          <li>The system persists a rich trace, but there is no separate analytics or review database yet; everything lives in the thread JSON.</li>
+        </ul>
+        <details style="margin-top:16px;">
+          <summary>What this means operationally</summary>
+          <p>
+            The chatbot can now feel meaningfully more conversational, but the current state is best understood as
+            a configurable workflow engine with selected LLM-powered interpretation layers, not yet as a fully
+            autonomous sales and operations agent.
+          </p>
+        </details>
+      </section>
+
+      <section class="footer">
+        Report generated from the current codebase state on April 4, 2026.
+      </section>
+    </main>
+  </div>
+</body>
+</html>

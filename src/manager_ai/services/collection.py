@@ -1,9 +1,16 @@
+from __future__ import annotations
+
 import json
 import re
+from typing import TYPE_CHECKING
 
-from manager_ai.models.client import Address, ClientChart, Dimensions, InstallationType
+from manager_ai.models.client import Address, ClientChart, InstallationType, NetArea
 from manager_ai.models.conversation import ConversationStage, ConversationState, Message
+from manager_ai.models.extraction import ExtractedClientData
 from manager_ai.ports.llm import LLMPort
+
+if TYPE_CHECKING:
+    from manager_ai.ports.extractor import ExtractorPort
 
 
 _INSTALLATION_TYPE_MAP: dict[str, InstallationType] = {
@@ -55,17 +62,16 @@ def merge_extracted_data(chart: ClientChart, extracted: dict) -> ClientChart:
     if raw_type and raw_type != "null":
         updates["installation_type"] = _INSTALLATION_TYPE_MAP.get(raw_type)
 
-    width = extracted.get("width_meters")
-    height = extracted.get("height_meters")
-    if width or height:
-        existing = chart.dimensions or Dimensions()
-        updates["dimensions"] = existing.model_copy(
-            update={
-                k: v
-                for k, v in {"width_meters": width, "height_meters": height}.items()
-                if v is not None
-            }
-        )
+    raw_net_areas = extracted.get("net_areas") or []
+    if raw_net_areas:
+        updates["net_areas"] = [
+            NetArea(
+                label=area.get("label") or f"Area {index}",
+                width_meters=area.get("width_meters"),
+                height_meters=area.get("height_meters"),
+            )
+            for index, area in enumerate(raw_net_areas, start=1)
+        ]
 
     if extracted.get("urgency"):
         updates["urgency"] = extracted["urgency"]
@@ -80,10 +86,23 @@ def required_fields_complete(chart: ClientChart) -> bool:
         chart.address.street,
         chart.address.city,
         chart.installation_type is not None,
-        chart.dimensions is not None,
-        chart.dimensions.width_meters is not None if chart.dimensions else False,
-        chart.dimensions.height_meters is not None if chart.dimensions else False,
+        any(
+            area.width_meters is not None and area.height_meters is not None
+            for area in chart.net_areas
+        ),
     ])
+
+
+def _dict_to_extracted(raw: dict) -> "ExtractedClientData":
+    return ExtractedClientData(
+        name=raw.get("name"),
+        street=raw.get("street"),
+        city=raw.get("city"),
+        floor_or_apartment=raw.get("floor_or_apartment"),
+        installation_type=raw.get("installation_type"),
+        net_areas=raw.get("net_areas") or [],
+        urgency=raw.get("urgency"),
+    )
 
 
 def run_collection(
@@ -91,6 +110,7 @@ def run_collection(
     user_message: str,
     llm: LLMPort,
     system_prompt: str,
+    extractor: "ExtractorPort | None" = None,
 ) -> tuple[ConversationState, str]:
     """
     Run one data-collection turn.
@@ -99,23 +119,24 @@ def run_collection(
     """
     updated_history = state.history + [Message(role="user", content=user_message)]
     messages_for_llm = [Message(role="system", content=system_prompt)] + updated_history
-    llm_response = llm.complete(messages_for_llm)
 
-    # Extract and validate structured data
-    extracted = extract_json_block(llm_response) or {}
-    updated_chart = merge_extracted_data(state.client, extracted)
+    if extractor is not None:
+        reply, extracted_data = extractor.collect(messages_for_llm)
+    else:
+        llm_response = llm.complete(messages_for_llm)
+        raw = extract_json_block(llm_response) or {}
+        extracted_data = _dict_to_extracted(raw)
+        reply = re.sub(r"```json.*?```", "", llm_response, flags=re.DOTALL).strip()
 
-    # Sanity-check dimensions
-    dims = updated_chart.dimensions
-    if dims and (
-        not is_plausible_dimension(dims.width_meters)
-        or not is_plausible_dimension(dims.height_meters)
+    updated_chart = merge_extracted_data(state.client, extracted_data.model_dump())
+
+    # Sanity-check areas
+    if any(
+        not is_plausible_dimension(area.width_meters)
+        or not is_plausible_dimension(area.height_meters)
+        for area in updated_chart.net_areas
     ):
-        # Reset the bad dimensions so the agent asks again
-        updated_chart = updated_chart.model_copy(update={"dimensions": None})
-
-    # Strip the JSON block from the reply before sending it to the client
-    reply = re.sub(r"```json.*?```", "", llm_response, flags=re.DOTALL).strip()
+        updated_chart = updated_chart.model_copy(update={"net_areas": []})
 
     updated_history = updated_history + [Message(role="assistant", content=reply)]
 

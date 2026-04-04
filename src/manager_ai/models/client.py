@@ -1,6 +1,6 @@
 from enum import Enum
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class InstallationType(str, Enum):
@@ -15,7 +15,8 @@ class Address(BaseModel):
     floor_or_apartment: str | None = None
 
 
-class Dimensions(BaseModel):
+class NetArea(BaseModel):
+    label: str | None = None
     width_meters: float | None = None
     height_meters: float | None = None
 
@@ -25,5 +26,5 @@ class ClientChart(BaseModel):
     phone: str
     address: Address = Address()
     installation_type: InstallationType | None = None
-    dimensions: Dimensions | None = None
+    net_areas: list[NetArea] = Field(default_factory=list)
     urgency: str | None = None

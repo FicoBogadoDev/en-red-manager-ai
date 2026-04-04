@@ -27,10 +27,14 @@ def run_qualification(
     # Strip the trailing keyword before sending the reply to the client
     reply = llm_response.replace("QUALIFIED", "").replace("NOT_QUALIFIED", "").strip()
 
-    updated_history = updated_history + [Message(role="assistant", content=reply)]
-
     new_stage = ConversationStage.COLLECTING if qualified else ConversationStage.DONE
-    new_state = state.model_copy(
-        update={"stage": new_stage, "history": updated_history}
-    )
+
+    if qualified:
+        # Discard the qualification exchange from history — the agent will
+        # fall through to collection, which will own this message turn.
+        new_state = state.model_copy(update={"stage": new_stage})
+    else:
+        updated_history = updated_history + [Message(role="assistant", content=reply)]
+        new_state = state.model_copy(update={"stage": new_stage, "history": updated_history})
+
     return new_state, reply

@@ -1,11 +1,41 @@
-[adapters]
-llm = "claude"      # "claude" requires ANTHROPIC_API_KEY; "log" prints to stdout
-messaging = "log"   # logs instead of sending via WhatsApp
-storage = "json"    # one JSON file per conversation in data/conversations/
+[llm]
+	type = "pydantic_ai"
+	model = "claude-sonnet-4-6"
+	api_key_env = "ANTHROPIC_API_KEY"
 
-[json_storage]
-path = "data/conversations"
+# [llm]
+# 	type = "claude"
+# 	model = "claude-sonnet-4-6"
+# 	api_key_env = "ANTHROPIC_API_KEY"
 
-[claude]
-model = "claude-sonnet-4-6"
-api_key_env = "ANTHROPIC_API_KEY"
+# [llm]
+# 	type = "log"
+
+
+[messaging]
+	type = "log"
+
+
+[storage]
+	type = "json"
+	path = "data/conversations"
+
+# [storage]
+# 	type = "memory"
+
+
+[extractor]
+	type = "instructor"
+	model = "claude-sonnet-4-6"
+	api_key_env = "ANTHROPIC_API_KEY"
+
+# [extractor]
+# 	type = "regex"
+
+
+[tracking]
+	type = "mlflow"
+	experiment = "manager-ai-dev"
+
+# [tracking]
+# 	type = "off"

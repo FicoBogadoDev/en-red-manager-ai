@@ -1,0 +1,13 @@
+from typing import Protocol
+
+from manager_ai.models.conversation import ContactThreadState, ConversationEvent
+
+
+class ConversationRepositoryPort(Protocol):
+    def load_thread(self, phone: str) -> ContactThreadState | None: ...
+    def save_thread(self, thread: ContactThreadState) -> None: ...
+    def list_thread_phones(self) -> list[str]: ...
+
+
+class EventStorePort(Protocol):
+    def append_event(self, phone: str, event: ConversationEvent) -> None: ...

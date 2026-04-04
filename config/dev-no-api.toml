@@ -1,0 +1,23 @@
+[llm]
+	type = "log"    # prints to stdout — zero API calls
+
+
+[messaging]
+	type = "log"
+
+
+[storage]
+	type = "json"
+	path = "data/conversations"
+
+# [storage]
+# 	type = "memory"
+
+
+# extractor not set — falls back to regex JSON block parsing
+# [extractor]
+# 	type = "regex"
+
+
+# [tracking]
+# 	type = "off"

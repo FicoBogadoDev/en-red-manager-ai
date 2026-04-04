@@ -1,0 +1,578 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manager AI LLM Workflow Report</title>
+  <style>
+    :root {
+      --bg: #eef4f1;
+      --paper: #fbfffd;
+      --ink: #1b2c2a;
+      --muted: #5e6f6b;
+      --line: #d6e0dc;
+      --accent: #0b6b58;
+      --accent-soft: #dff4ee;
+      --deep: #123b34;
+      --warn: #8a4b18;
+      --warn-soft: #fff2df;
+      --shadow: 0 20px 50px rgba(17, 36, 32, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Cambria, Georgia, serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(11, 107, 88, 0.09), transparent 25%),
+        radial-gradient(circle at top right, rgba(18, 59, 52, 0.10), transparent 22%),
+        linear-gradient(180deg, #f7fbf9 0%, var(--bg) 100%);
+    }
+
+    .page {
+      width: min(1200px, calc(100vw - 32px));
+      margin: 24px auto 40px;
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .toc,
+    .panel {
+      background: rgba(251, 255, 253, 0.95);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .toc {
+      position: sticky;
+      top: 20px;
+      padding: 24px 20px;
+    }
+
+    .toc a {
+      display: block;
+      text-decoration: none;
+      color: var(--ink);
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      margin: 2px 0;
+    }
+
+    .toc a:hover {
+      background: var(--accent-soft);
+    }
+
+    .content {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .panel {
+      padding: 30px;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--accent);
+      font-size: 12px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.04;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 26px;
+    }
+
+    h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+
+    p, li {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.75;
+    }
+
+    ul {
+      margin: 10px 0 0 18px;
+      padding: 0;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 20px;
+    }
+
+    .grid,
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .card,
+    .stat,
+    .lane,
+    .callout {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+      background: #fcfffe;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 26px;
+      color: var(--deep);
+      margin-bottom: 6px;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 12px;
+      margin: 0 6px 6px 0;
+    }
+
+    .flow {
+      display: grid;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .lane {
+      position: relative;
+      padding-left: 64px;
+    }
+
+    .lane .index {
+      position: absolute;
+      left: 16px;
+      top: 16px;
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      margin-top: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 12px 10px;
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+    }
+
+    th {
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 12px;
+      color: var(--deep);
+    }
+
+    code, pre {
+      font-family: "Consolas", "Courier New", monospace;
+    }
+
+    code {
+      background: #edf4f2;
+      padding: 2px 6px;
+      border-radius: 6px;
+      color: #173d37;
+      font-size: 0.93em;
+    }
+
+    pre {
+      margin: 12px 0 0;
+      padding: 16px;
+      border-radius: 16px;
+      overflow-x: auto;
+      background: #112522;
+      color: #dff6ef;
+      line-height: 1.5;
+      font-size: 13px;
+    }
+
+    .warn {
+      background: var(--warn-soft);
+      border-color: #f0cfab;
+    }
+
+    .warn .eyebrow,
+    .warn h2,
+    .warn h3 {
+      color: var(--warn);
+    }
+
+    .footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      padding-top: 8px;
+    }
+
+    @media (max-width: 980px) {
+      .page,
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .toc {
+        position: static;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <aside class="toc">
+      <p class="eyebrow">Companion Report</p>
+      <h1>LLM Path And Prompts</h1>
+      <p style="margin-top:10px; color:var(--muted); font-size:14px; line-height:1.6;">
+        This report isolates the model-driven layer of the chatbot: where real LLM calls happen, what each call sees,
+        how prompts are shaped, and where deterministic logic still dominates.
+      </p>
+      <a href="#overview">Overview</a>
+      <a href="#where-models-are-used">Where Models Are Used</a>
+      <a href="#base-llm-adapter">Base LLM Adapter</a>
+      <a href="#intent-classifier">Intent Classifier Prompt</a>
+      <a href="#structured-extraction">Extraction Prompt</a>
+      <a href="#reply-generator">Reply Generation Prompt</a>
+      <a href="#config">Configuration</a>
+      <a href="#limits">Current Limits</a>
+    </aside>
+
+    <main class="content">
+      <section class="panel hero" id="overview">
+        <div>
+          <p class="eyebrow">Summary</p>
+          <h2>The LLM Layer Is Now Real, But Partial</h2>
+          <p>
+            The chatbot’s conversation stack now includes real model calls in three places:
+            intent classification, structured extraction, and reply drafting. These sit inside a deterministic workflow
+            that still owns routing, state transitions, quote branching, scheduling branching, and persistence.
+          </p>
+          <p>
+            That means the model is not running the whole bot end to end. Instead, it acts as a set of bounded
+            interpreters plugged into specific workflow steps.
+          </p>
+          <div>
+            <span class="pill">LLM for intent</span>
+            <span class="pill">LLM for extraction</span>
+            <span class="pill">LLM for fallback replies</span>
+            <span class="pill">Deterministic routing remains</span>
+            <span class="pill">Mocked ops still remain</span>
+          </div>
+        </div>
+        <div class="stat-grid">
+          <div class="stat">
+            <strong>3</strong>
+            <span>Model-backed workflow modules</span>
+          </div>
+          <div class="stat">
+            <strong>1</strong>
+            <span>Shared transport adapter: <code>PydanticAIAdapter</code></span>
+          </div>
+          <div class="stat">
+            <strong>8</strong>
+            <span>Recent conversation turns used in the classifier/reply context windows</span>
+          </div>
+          <div class="stat">
+            <strong>0</strong>
+            <span>Real scheduling or reminder integrations in the LLM path</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="where-models-are-used">
+        <p class="eyebrow">Runtime Map</p>
+        <h2>Where The Workflow Actually Calls Models</h2>
+        <div class="flow">
+          <div class="lane">
+            <div class="index">1</div>
+            <h3>Intent classification</h3>
+            <p>
+              <code>LLMMessageClassifier</code> asks the model to map the latest client turn into one of the enumerated
+              <code>IntentType</code> values. This happens early in the workflow, before route selection and job choice.
+            </p>
+          </div>
+          <div class="lane">
+            <div class="index">2</div>
+            <h3>Structured extraction</h3>
+            <p>
+              <code>LLMStructuredExtractionAdapter</code> asks the model to return a typed update for the current job:
+              contact name, address, city, installation type, dimensions, urgency, and constraints.
+            </p>
+          </div>
+          <div class="lane">
+            <div class="index">3</div>
+            <h3>Reply drafting</h3>
+            <p>
+              <code>LLMConversationReplyAdapter</code> takes a deterministic fallback reply plus current job state
+              and recent history, then rewrites that into a more natural WhatsApp answer.
+            </p>
+          </div>
+        </div>
+        <p>
+          The core orchestrator in <code>workflow_agent.py</code> still decides when each of these is invoked.
+          None of the LLM adapters directly owns thread state or persistence.
+        </p>
+      </section>
+
+      <section class="panel" id="base-llm-adapter">
+        <p class="eyebrow">Shared Transport</p>
+        <h2>How The Base LLM Adapter Works</h2>
+        <p>
+          The low-level model transport is <code>PydanticAIAdapter</code>. It implements the generic
+          <code>LLMPort</code> and is currently configured against Anthropic models via
+          <code>pydantic_ai</code>.
+        </p>
+        <div class="grid">
+          <div class="card">
+            <h3>System prompt handling</h3>
+            <p>
+              The adapter pulls the first <code>system</code> message out of the message list and passes it into
+              PydanticAI as <code>instructions=</code>.
+            </p>
+          </div>
+          <div class="card">
+            <h3>History handling</h3>
+            <p>
+              Prior user and assistant messages become PydanticAI message history objects. The last non-system message
+              is treated as the current prompt input.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Stateless call pattern</h3>
+            <p>
+              A fresh PydanticAI agent is created per call. This keeps the adapter simple and avoids hidden cached state.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Event-loop safety</h3>
+            <p>
+              Calls now pass through <code>run_coro_sync(...)</code>, which runs normally in synchronous contexts and
+              transparently hops to a worker thread when an event loop is already running inside NiceGUI.
+            </p>
+          </div>
+        </div>
+        <pre>run_coro_sync(coro):
+  if no event loop is running:
+    asyncio.run(coro)
+  else:
+    run asyncio.run(coro) inside a one-thread executor</pre>
+      </section>
+
+      <section class="panel" id="intent-classifier">
+        <p class="eyebrow">Prompt 1</p>
+        <h2>Intent Classifier Prompt</h2>
+        <p>
+          The classifier is constrained. It is not freeform chat generation. It returns a typed object with a single
+          <code>intent</code> field.
+        </p>
+        <pre>Clasificá el último mensaje del cliente dentro de estas intenciones:
+new_inquiry, provide_evidence, quote_question, negotiation, scheduling,
+rescheduling, payment, post_install, follow_up, chit_chat, unknown.
+
+Pensá en conversaciones reales de En Red Rosario sobre redes de seguridad.
+Si el cliente comparte un nombre, dirección, medidas, fotos o cualquier dato útil
+del caso, eso cuenta como provide_evidence.</pre>
+        <p>
+          Context shape:
+        </p>
+        <ul>
+          <li>The current message text is passed as the main prompt input.</li>
+          <li>Up to the last 8 thread messages are added as message history, excluding the current message itself.</li>
+          <li>The classifier does not receive a separate large state summary yet; it relies mostly on recent dialogue.</li>
+        </ul>
+        <p>
+          Design implication: the classifier is better than keywords for ambiguous turns, but still fairly lightweight.
+          It is not yet a full conversation analyst with deep thread memory.
+        </p>
+      </section>
+
+      <section class="panel" id="structured-extraction">
+        <p class="eyebrow">Prompt 2</p>
+        <h2>Structured Extraction Prompt</h2>
+        <p>
+          The extraction module asks the model for a typed job update, not prose. It returns a Pydantic object with
+          fields like <code>contact_name</code>, <code>address</code>, <code>city</code>,
+          <code>installation_type</code>, <code>width_meters</code>, and constraint arrays.
+        </p>
+        <pre>Extraé datos estructurados del último mensaje del cliente para En Red Rosario.
+Solo devolvé datos explícitos o muy confiables.
+Si el mensaje parece ser solamente el nombre de la persona, cargalo en contact_name.
+installation_type debe ser balcony, roof o stairwell cuando corresponda.
+service_intent puede ser safety_net_installation si queda claro que busca redes de seguridad.</pre>
+        <p>
+          The actual model input also contains a manually assembled state summary, for example:
+        </p>
+        <pre>Trabajo actual: nombre=..., direccion=..., ciudad=..., tipo=...,
+ancho=..., alto=..., faltantes=...
+Ultimo mensaje del cliente: ...</pre>
+        <p>
+          After the model returns, the workflow merges only the populated values into the current <code>JobState</code>.
+          Existing values are preserved unless the new output explicitly updates them.
+        </p>
+        <div class="callout warn">
+          <h3>Important nuance</h3>
+          <p>
+            The extraction adapter currently reads only the latest message plus a compact summary of current job state.
+            It is not doing full transcript re-synthesis. That keeps it fast, but it can miss broader conversational context.
+          </p>
+        </div>
+      </section>
+
+      <section class="panel" id="reply-generator">
+        <p class="eyebrow">Prompt 3</p>
+        <h2>Reply Generation Prompt</h2>
+        <p>
+          The reply generator is the most openly conversational of the three model-backed modules.
+          It still operates inside a controlled frame: the workflow provides the intended intent, route, state summary,
+          known fields, missing fields, and a deterministic fallback reply.
+        </p>
+        <pre>System prompt 1:
+Sos el asistente virtual de En Red Rosario.
+Respondé en español rioplatense, con tono humano, breve y claro para WhatsApp.
+No inventes datos. Si faltan datos, pedí solo el próximo dato más importante.
+No menciones procesos internos, rutas, estados ni IDs.
+Tu objetivo comercial es avanzar la conversación sin abrumar.
+
+System prompt 2:
+Intent detectado: ...
+Ruta seleccionada: ...
+Trabajo actual: ...
+Estado del trabajo: ...
+Datos conocidos: ...
+Campos faltantes: ...
+Respuesta base sugerida: ...</pre>
+        <p>
+          Then the adapter appends recent thread history and finishes with an instruction like:
+        </p>
+        <pre>Redactá la próxima respuesta al cliente.
+Mantenela en 1 o 2 frases cortas.
+Si la respuesta base ya es correcta, podés reformularla suavemente sin cambiar el objetivo.</pre>
+        <p>
+          This is a good example of the current design philosophy: the LLM is used as a controlled drafting layer,
+          not as the sole owner of business intent.
+        </p>
+      </section>
+
+      <section class="panel" id="config">
+        <p class="eyebrow">Wiring</p>
+        <h2>How The LLM Path Is Configured</h2>
+        <p>
+          NiceGUI now defaults to <code>config/dev-ui-llm.toml</code>, which enables the real model-backed path:
+        </p>
+        <pre>[llm]
+type = "pydantic_ai"
+model = "claude-sonnet-4-6"
+api_key_env = "ANTHROPIC_API_KEY"
+
+[message_classifier]
+type = "llm"
+model = "claude-sonnet-4-6"
+api_key_env = "ANTHROPIC_API_KEY"
+
+[structured_extraction]
+type = "llm"
+model = "claude-sonnet-4-6"
+api_key_env = "ANTHROPIC_API_KEY"
+
+[reply_generation]
+type = "llm"</pre>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Section</th>
+                <th>What it controls</th>
+                <th>Current status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>[llm]</code></td>
+                <td>Shared generic LLM transport used by reply generation</td>
+                <td>Real model</td>
+              </tr>
+              <tr>
+                <td><code>[message_classifier]</code></td>
+                <td>Intent classifier implementation</td>
+                <td>Real model</td>
+              </tr>
+              <tr>
+                <td><code>[structured_extraction]</code></td>
+                <td>Data extraction implementation</td>
+                <td>Real model</td>
+              </tr>
+              <tr>
+                <td><code>[reply_generation]</code></td>
+                <td>Fallback reply drafting implementation</td>
+                <td>Real model</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel warn" id="limits">
+        <p class="eyebrow">Caveats</p>
+        <h2>What Is Still Not LLM-Driven</h2>
+        <ul>
+          <li>Route mapping after intent classification is still deterministic.</li>
+          <li>Thread/job selection is still heuristic.</li>
+          <li>Service-request disqualification is still keyword-based.</li>
+          <li>Quote drafting is still mocked, so quote replies are not commercially intelligent yet.</li>
+          <li>Scheduling and reminders are still mocked operational placeholders.</li>
+          <li>Reply generation currently improves fallback intake/scoping messages, but not every branch of the workflow.</li>
+        </ul>
+        <p>
+          In short: the chatbot now has real conversational intelligence in important places, but the current system is
+          still a hybrid workflow engine rather than a fully LLM-authored agent from start to finish.
+        </p>
+      </section>
+
+      <section class="footer">
+        Companion report for the current LLM-backed chatbot path. Generated from code on April 4, 2026.
+      </section>
+    </main>
+  </div>
+</body>
+</html>

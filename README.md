@@ -561,6 +561,31 @@ model        = "claude-sonnet-4-6"
 api_key_env  = "ANTHROPIC_API_KEY"   # name of the env var to read the key from
 ```
 
+### `config/dev-no-api.toml`
+
+Same as `dev.toml` but uses `llm = "log"` — no Anthropic API key required. Useful for checking routing, storage, and message flow without spending tokens. Extraction falls back to the regex JSON-block parser.
+
+```toml
+[adapters]
+llm       = "log"    # prints to stdout — zero API calls
+messaging = "log"
+storage   = "json"
+# extractor not set — falls back to regex JSON block parsing
+
+[json_storage]
+path = "data/conversations"
+
+[claude]
+model       = "claude-sonnet-4-6"
+api_key_env = "ANTHROPIC_API_KEY"
+```
+
+To start the server with this config, pass the path via the `CONFIG_PATH` environment variable (or whichever mechanism `create_app` / `build_agent` is wired to read):
+
+```bash
+CONFIG_PATH=config/dev-no-api.toml UV_PROJECT_ENVIRONMENT=~/.venvs/manager-ai uv run uvicorn api.main:app --reload
+```
+
 ### `.env`
 ```
 ANTHROPIC_API_KEY=sk-ant-...
@@ -645,3 +670,43 @@ rm data/conversations/+5493411234567.json
 | LLM | `ClaudeAdapter` | Any provider implementing `LLMPort` |
 | Handoff | Send closing message only | Notify CRM / human team via webhook |
 | Validation | Dimension range check | NLP address validation, duplicate detection |
+# Current README
+
+Manager AI is a Python application for handling WhatsApp conversations for En Red Rosario, a Rosario-based company that installs safety nets for balconies, roofs, and stairwells.
+
+The project is no longer modeled as one short linear lead-qualification chat. The current architecture is built around:
+
+- one persistent contact thread per phone
+- multiple jobs inside the same thread over time
+- modular workflow services for routing, extraction, evidence intake, quote handling, scheduling, escalation, and closure
+
+Current runtime status:
+
+- `MessageClassifierPort` is heuristic by default
+- `StructuredExtractionPort` is heuristic by default
+- quote drafting, scheduling, and reminders are mocked behind ports
+
+Current source-of-truth docs:
+
+- `docs/project_overview.md`
+- `docs/conversation_workflow_roadmap.md`
+- `docs/current_documentation_index.md`
+- `docs/research/index.html`
+
+Running locally:
+
+```bash
+uv sync --extra dev
+uv run uvicorn api.main:app --reload
+```
+
+Running tests:
+
+```bash
+uv run pytest tests/unit -q
+```
+
+Legacy note:
+Older content remains below in this file for now, but it describes the previous linear workflow and should not be treated as current architecture documentation.
+
+---

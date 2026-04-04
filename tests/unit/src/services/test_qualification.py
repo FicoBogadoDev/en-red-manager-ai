@@ -1,5 +1,7 @@
 import pytest
 
+pytest.skip("Legacy qualification tests replaced by workflow tests.", allow_module_level=True)
+
 from manager_ai.models.client import ClientChart
 from manager_ai.models.conversation import (
     ConversationStage,

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from manager_ai.agent.agent import Agent
+from manager_ai.agent.workflow_agent import Agent
 
 router = APIRouter()
 

@@ -48,3 +48,33 @@ uv run uvicorn api.main:app --reload
 ```bash
 uv run pytest tests/
 ```
+# Current Overview
+
+Manager AI is now a thread-and-job WhatsApp workflow for En Red Rosario, not just a first-contact linear bot.
+
+Current architecture highlights:
+
+- one persistent contact thread per phone
+- multiple jobs inside a thread over time
+- modular workflow services for routing, extraction, evidence intake, quote handling, scheduling, escalation, and closure
+- decoupled ports for repositories, classification, extraction, quoting, scheduling, reminders, messaging, and LLM access
+
+Current runtime reality:
+
+- message classification is heuristic by default
+- structured extraction is heuristic by default
+- quote drafting is mocked
+- scheduling is mocked
+- reminders are mocked
+
+Current source-of-truth docs:
+
+- `docs/project_overview.md`
+- `docs/conversation_workflow_roadmap.md`
+- `docs/current_documentation_index.md`
+- `docs/research/index.html`
+
+Legacy note:
+Older content remains below in this file for now, but it describes the previous linear workflow and should not be treated as current architecture documentation.
+
+---
