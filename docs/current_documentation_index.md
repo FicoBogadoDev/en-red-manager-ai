@@ -4,6 +4,8 @@ This file exists to clearly separate current documentation from older markdown t
 
 Use these documents as the current source of truth for the project:
 
+- `docs/knowledge/`
+  Maintained modular project knowledge, active context, and the ongoing work log
 - `docs/project_overview.md`
   Current technical overview of the codebase and workflow direction
 - `docs/conversation_workflow_roadmap.md`
@@ -16,4 +18,5 @@ Use these documents as the current source of truth for the project:
 Important note:
 
 - older docs such as `README.md` and `docs/overview.md` still contain sections from the previous linear workflow model
+- `docs/research/` is primarily for research and generated report artifacts, not the maintained knowledge base
 - until they are fully rewritten, prefer the documents listed above when there is any conflict
