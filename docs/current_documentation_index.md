@@ -8,6 +8,8 @@ Use these documents as the current source of truth for the project:
   Maintained modular project knowledge, active context, and the ongoing work log
 - `docs/project_overview.md`
   Current technical overview of the codebase and workflow direction
+- `docs/configuration.md`
+  Current TOML configuration shapes, supported `type` values, and runnable config file roles
 - `docs/conversation_workflow_roadmap.md`
   Next implementation phases after the workflow refactor
 - `docs/research/index.html`

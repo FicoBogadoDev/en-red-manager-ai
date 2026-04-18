@@ -3,14 +3,6 @@
 	model = "claude-sonnet-4-6"
 	api_key_env = "ANTHROPIC_API_KEY"
 
-# [llm]
-# 	type = "claude"
-# 	model = "claude-sonnet-4-6"
-# 	api_key_env = "ANTHROPIC_API_KEY"
-
-# [llm]
-# 	type = "log"
-
 
 [messaging]
 	type = "log"
@@ -20,22 +12,13 @@
 	type = "json"
 	path = "data/conversations"
 
-# [storage]
-# 	type = "memory"
-
 
 [extractor]
 	type = "instructor"
 	model = "claude-sonnet-4-6"
 	api_key_env = "ANTHROPIC_API_KEY"
 
-# [extractor]
-# 	type = "regex"
-
 
 [tracking]
 	type = "mlflow"
 	experiment = "manager-ai-dev"
-
-# [tracking]
-# 	type = "off"

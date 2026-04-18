@@ -17,6 +17,7 @@ This file is for the current working picture of the project.
 - Keep maintained documentation aligned with the current thread/job workflow rather than the older linear-only story.
 - Gradually reconcile `README.md` and older docs with the newer workflow architecture.
 - Keep the behavior/implementation split clean as the knowledge base grows.
+- Keep the new wiring split and configuration reference in sync as runtime options change.
 
 ### Open questions
 
@@ -27,5 +28,5 @@ This file is for the current working picture of the project.
 ### Documentation gaps
 
 - `chatbot-behavior.md` still needs more specific rules around reply style, handoff wording, and post-install behavior.
-- `implementation-architecture.md` can still be expanded with NiceGUI and MLflow details.
+- `implementation-architecture.md` can still be expanded with NiceGUI boundary details and remaining architecture leaks.
 - Broader repo docs still contain stale architecture descriptions.

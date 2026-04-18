@@ -58,6 +58,8 @@ Use `chatbot-behavior.md` when the answer is about workflow, customer handling, 
 
 Use `implementation-architecture.md` when the answer is about modules, models, adapters, persistence, configuration, or tests.
 
+Use `../configuration.md` when the answer is specifically about runnable TOML shapes, supported config types, or which config file to start from.
+
 ## Current Intent
 
 This folder is designed to support future Codex skills that can:

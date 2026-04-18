@@ -3,9 +3,6 @@
 	model = "claude-sonnet-4-6"
 	api_key_env = "ANTHROPIC_API_KEY"
 
-# [llm]
-# 	type = "log"
-
 
 [messaging]
 	type = "log"
@@ -21,24 +18,15 @@
 	model = "claude-sonnet-4-6"
 	api_key_env = "ANTHROPIC_API_KEY"
 
-# [message_classifier]
-# 	type = "heuristic"
-
 
 [structured_extraction]
 	type = "llm"
 	model = "claude-sonnet-4-6"
 	api_key_env = "ANTHROPIC_API_KEY"
 
-# [structured_extraction]
-# 	type = "heuristic"
-
 
 [reply_generation]
 	type = "llm"
-
-# [reply_generation]
-# 	type = "rules"
 
 
 [tracking]

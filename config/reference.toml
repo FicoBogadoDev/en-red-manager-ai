@@ -1,0 +1,69 @@
+# Reference only. This file documents valid config shapes and is not intended
+# to be used directly as a runnable environment config.
+
+[llm]
+	type = "pydantic_ai"
+	model = "claude-sonnet-4-6"
+	api_key_env = "ANTHROPIC_API_KEY"
+
+# [llm]
+# 	type = "claude"
+# 	model = "claude-sonnet-4-6"
+# 	api_key_env = "ANTHROPIC_API_KEY"
+
+# [llm]
+# 	type = "log"
+
+
+[messaging]
+	type = "log"
+
+
+[storage]
+	type = "json"
+	path = "data/conversations"
+
+# [storage]
+# 	type = "memory"
+
+
+[extractor]
+	type = "instructor"
+	model = "claude-sonnet-4-6"
+	api_key_env = "ANTHROPIC_API_KEY"
+
+# [extractor]
+# 	type = "regex"
+
+
+[message_classifier]
+	type = "llm"
+	model = "claude-sonnet-4-6"
+	api_key_env = "ANTHROPIC_API_KEY"
+
+# [message_classifier]
+# 	type = "heuristic"
+
+
+[structured_extraction]
+	type = "llm"
+	model = "claude-sonnet-4-6"
+	api_key_env = "ANTHROPIC_API_KEY"
+
+# [structured_extraction]
+# 	type = "heuristic"
+
+
+[reply_generation]
+	type = "llm"
+
+# [reply_generation]
+# 	type = "rules"
+
+
+[tracking]
+	type = "mlflow"
+	experiment = "manager-ai-dev"
+
+# [tracking]
+# 	type = "off"

@@ -35,8 +35,10 @@ The main runtime entry point is the workflow-oriented `Agent` in `src/manager_ai
   Protocols for infrastructure and interpretation boundaries
 - `src/manager_ai/adapters/`
   Concrete implementations for classifiers, extraction, LLMs, messaging, storage, scheduling, reminders, and reply generation
+- `src/manager_ai/wiring/`
+  Typed config models plus focused builder modules for LLM, storage, messaging, workflow dependencies, and top-level app assembly
 - `config/`
-  TOML runtime variants
+  Runnable TOML runtime variants plus `reference.toml` as a shape catalog
 - `nice_gui_app/`
   Local UI for browsing and driving saved conversations
 
@@ -45,11 +47,12 @@ The main runtime entry point is the workflow-oriented `Agent` in `src/manager_ai
 At a high level:
 
 1. `api/main.py` loads configuration and builds the agent.
-2. `src/manager_ai/config.py` selects concrete adapters from TOML.
-3. `api/routes.py` receives `{ phone, text }` webhook payloads.
-4. `workflow_agent.Agent` loads or creates a contact thread.
-5. The agent classifies intent, selects or creates a job, updates extracted state, and decides outbound replies or external actions.
-6. Messaging and storage adapters persist the result outside the core workflow.
+2. `src/manager_ai/wiring/app.py` parses TOML, validates it as `AppConfig`, and assembles the runtime graph.
+3. `src/manager_ai/config.py` remains as a compatibility import surface for `build_agent` and config types.
+4. `api/routes.py` receives `{ phone, text }` webhook payloads.
+5. `workflow_agent.Agent` loads or creates a contact thread.
+6. The agent classifies intent, selects or creates a job, updates extracted state, and decides outbound replies or external actions.
+7. Messaging and storage adapters persist the result outside the core workflow.
 
 More concretely, `workflow_agent.Agent` currently does this for each incoming message:
 
@@ -118,8 +121,19 @@ Current practical config variants:
   Log LLM, JSON storage, log messaging, no extractor config, and no tracking
 - `config/dev-ui-llm.toml`
   Additional local variant for UI-oriented work
+- `config/reference.toml`
+  Non-runnable reference catalog showing the supported TOML section shapes and fields
 
-The config builder in `src/manager_ai/config.py` currently supports:
+The current config parsing and assembly path is split between:
+
+- `src/manager_ai/wiring/settings.py`
+  Pydantic discriminated unions and `AppConfig`
+- `src/manager_ai/wiring/app.py`
+  top-level config loading and agent assembly
+- focused builder modules under `src/manager_ai/wiring/`
+  subsystem-specific construction logic
+
+The current builder surface supports:
 
 - LLM adapters: `pydantic_ai`, `claude`, `log`
 - storage adapters: `json`, `memory`
@@ -129,6 +143,8 @@ The config builder in `src/manager_ai/config.py` currently supports:
 - tracking modes: `mlflow`, `off`
 
 An older `extractor` path also still exists for Instructor-based extraction support.
+
+There is also now a human-facing configuration reference in `docs/configuration.md` so valid TOML shapes are discoverable without reading the Python config models directly.
 
 ## Current Service Rules Reflected In Code
 
@@ -194,6 +210,14 @@ Several important pieces are intentionally scaffolded:
 - scheduling is mocked
 - reminders are mocked
 - messaging is still log-based rather than a real WhatsApp transport
+
+Some wiring choices are intentionally still code-based rather than config-driven:
+
+- quote drafter
+- scheduler
+- reminders
+
+That is deliberate for now because each currently has only one practical implementation in the repo.
 
 There is also some intentional architecture overlap from the ongoing transition:
 
