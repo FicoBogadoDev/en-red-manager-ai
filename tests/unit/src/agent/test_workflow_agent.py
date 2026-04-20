@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from typing import Any
 
 from manager_ai.adapters.storage.memory import InMemoryStorageAdapter
 from manager_ai.agent.workflow_agent import Agent
@@ -6,7 +7,7 @@ from manager_ai.models.conversation import IncomingMessage, JobStatus, ThreadSta
 
 
 class StubLLM:
-    def complete(self, messages: list[object]) -> str:
+    def complete(self, messages: Any) -> str:
         return "stub"
 
 

@@ -10,7 +10,10 @@ from manager_ai.adapters.scheduling.mock import MockSchedulingAdapter
 from manager_ai.agent.workflow_agent import Agent
 from manager_ai.wiring.llm import build_llm
 from manager_ai.wiring.messaging import build_messaging
-from manager_ai.wiring.settings import AppConfig, MLFlowTrackingConfig
+from manager_ai.wiring.raw_app_config import RawAppConfig
+from manager_ai.wiring.resolution import resolve_app_config
+from manager_ai.wiring.resolved_app_config import ResolvedAppConfig
+from manager_ai.wiring.settings import MLFlowTrackingConfig
 from manager_ai.wiring.storage import build_storage
 from manager_ai.wiring.workflow import (
     build_extractor,
@@ -20,9 +23,13 @@ from manager_ai.wiring.workflow import (
 )
 
 
-def load_app_config(config_path: Path) -> AppConfig:
+def load_raw_app_config(config_path: Path) -> RawAppConfig:
     raw = toml.loads(config_path.read_text(encoding="utf-8"))
-    return AppConfig.model_validate(raw)
+    return RawAppConfig.model_validate(raw)
+
+
+def load_app_config(config_path: Path) -> ResolvedAppConfig:
+    return resolve_app_config(load_raw_app_config(config_path))
 
 
 def build_agent(config_path: Path):
@@ -36,7 +43,7 @@ def build_agent(config_path: Path):
         extractor=build_extractor(config.extractor),
         classifier=build_message_classifier(config.message_classifier),
         structured_extractor=build_structured_extraction(config.structured_extraction),
-        reply_generator=build_reply_generation(config.reply_generation, llm),
+        reply_generator=build_reply_generation(config.reply_generation),
         quote_drafter=MockQuoteDraftingAdapter(),
         scheduler=MockSchedulingAdapter(),
         reminders=MockReminderAdapter(),

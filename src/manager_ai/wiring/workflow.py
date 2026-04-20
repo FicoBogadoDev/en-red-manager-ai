@@ -1,17 +1,19 @@
 from __future__ import annotations
 
+from manager_ai.adapters.reply_generation.config import (
+    LLMReplyGenerationConfig,
+    ReplyGenerationConfig,
+)
 from manager_ai.ports.conversation_reply import ConversationReplyPort
-from manager_ai.ports.llm import LLMPort
 from manager_ai.ports.message_classifier import MessageClassifierPort
 from manager_ai.ports.structured_extraction import StructuredExtractionPort
+from manager_ai.wiring.llm import build_llm
 from manager_ai.wiring.settings import (
     ExtractorConfig,
     InstructorExtractorConfig,
     LLMMessageClassifierConfig,
-    LLMReplyGenerationConfig,
     LLMStructuredExtractionConfigModel,
     MessageClassifierConfig,
-    ReplyGenerationConfig,
     StructuredExtractionConfig,
 )
 
@@ -55,12 +57,11 @@ def build_structured_extraction(
 
 def build_reply_generation(
     cfg: ReplyGenerationConfig,
-    llm: LLMPort,
 ) -> ConversationReplyPort:
-    if isinstance(cfg, LLMReplyGenerationConfig):
-        from manager_ai.adapters.reply_generation.llm import LLMConversationReplyAdapter
-
-        return LLMConversationReplyAdapter(llm=llm)
+    from manager_ai.adapters.reply_generation.llm import LLMConversationReplyAdapter
     from manager_ai.adapters.reply_generation.rules import RulesConversationReplyAdapter
+
+    if isinstance(cfg, LLMReplyGenerationConfig):
+        return LLMConversationReplyAdapter(llm=build_llm(cfg.llm))
 
     return RulesConversationReplyAdapter()

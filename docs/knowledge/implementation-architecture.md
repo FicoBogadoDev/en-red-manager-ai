@@ -36,7 +36,7 @@ The main runtime entry point is the workflow-oriented `Agent` in `src/manager_ai
 - `src/manager_ai/adapters/`
   Concrete implementations for classifiers, extraction, LLMs, messaging, storage, scheduling, reminders, and reply generation
 - `src/manager_ai/wiring/`
-  Typed config models plus focused builder modules for LLM, storage, messaging, workflow dependencies, and top-level app assembly
+  App-level raw/resolved config models, resolution logic, focused builder modules, and top-level app assembly
 - `config/`
   Runnable TOML runtime variants plus `reference.toml` as a shape catalog
 - `nice_gui_app/`
@@ -47,12 +47,14 @@ The main runtime entry point is the workflow-oriented `Agent` in `src/manager_ai
 At a high level:
 
 1. `api/main.py` loads configuration and builds the agent.
-2. `src/manager_ai/wiring/app.py` parses TOML, validates it as `AppConfig`, and assembles the runtime graph.
-3. `src/manager_ai/config.py` remains as a compatibility import surface for `build_agent` and config types.
-4. `api/routes.py` receives `{ phone, text }` webhook payloads.
-5. `workflow_agent.Agent` loads or creates a contact thread.
-6. The agent classifies intent, selects or creates a job, updates extracted state, and decides outbound replies or external actions.
-7. Messaging and storage adapters persist the result outside the core workflow.
+2. `src/manager_ai/wiring/app.py` loads author-facing raw TOML config into `RawAppConfig`.
+3. `src/manager_ai/wiring/resolution.py` resolves shared references into effective module configs, producing `ResolvedAppConfig`.
+4. Builders create runtime objects from resolved configs only.
+5. `src/manager_ai/config.py` remains as a compatibility import surface for `build_agent` and common config types.
+6. `api/routes.py` receives `{ phone, text }` webhook payloads.
+7. `workflow_agent.Agent` loads or creates a contact thread.
+8. The agent classifies intent, selects or creates a job, updates extracted state, and decides outbound replies or external actions.
+9. Messaging and storage adapters persist the result outside the core workflow.
 
 More concretely, `workflow_agent.Agent` currently does this for each incoming message:
 
@@ -126,8 +128,16 @@ Current practical config variants:
 
 The current config parsing and assembly path is split between:
 
-- `src/manager_ai/wiring/settings.py`
-  Pydantic discriminated unions and `AppConfig`
+- `src/manager_ai/adapters/llm/config.py`
+  effective LLM config contract near the LLM adapter family
+- `src/manager_ai/adapters/reply_generation/config.py`
+  effective reply-generation config contract near the reply-generation adapters
+- `src/manager_ai/wiring/raw_app_config.py`
+  author-facing TOML config models including shared-reference variants
+- `src/manager_ai/wiring/resolved_app_config.py`
+  resolved builder-facing app config
+- `src/manager_ai/wiring/resolution.py`
+  conversion from raw author-facing config to resolved effective config
 - `src/manager_ai/wiring/app.py`
   top-level config loading and agent assembly
 - focused builder modules under `src/manager_ai/wiring/`
@@ -139,12 +149,36 @@ The current builder surface supports:
 - storage adapters: `json`, `memory`
 - message classifier adapters: `heuristic`, `llm`
 - structured extraction adapters: `heuristic`, `llm`
-- reply generation adapters: `rules`, `llm`
+- reply generation adapters: `rules`, `shared_llm`, `llm`
 - tracking modes: `mlflow`, `off`
 
 An older `extractor` path also still exists for Instructor-based extraction support.
 
 There is also now a human-facing configuration reference in `docs/configuration.md` so valid TOML shapes are discoverable without reading the Python config models directly.
+
+The current wiring style still mixes two patterns:
+
+- components configured entirely from their own section
+- components that reuse author-facing shared config choices resolved at the
+  app layer
+
+The preferred direction is to keep that sharing explicit in TOML rather than
+implicit in builder fallback. In other words, when a component reuses a shared
+config profile, the config should say so; when it owns a child dependency, that
+child should appear as a real nested config section.
+
+`reply_generation` now reflects that rule directly:
+
+- raw TOML may use `type = "shared_llm"` with `shared = "llm"` to refer to the
+  top-level LLM config explicitly
+- resolution converts that raw shared reference into an effective
+  `type = "llm"` config with a concrete child `LLMConfig`
+- builders only see the resolved effective form and do not perform shared
+  reference lookup themselves
+
+This is only the first slice of the new config architecture. Right now
+`shared_llm` supports `shared = "llm"` only. Named shared LLM profile maps have
+not been introduced yet.
 
 ## Current Service Rules Reflected In Code
 

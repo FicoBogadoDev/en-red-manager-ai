@@ -1,5 +1,5 @@
 from manager_ai.ports.llm import LLMPort
-from manager_ai.wiring.settings import ClaudeLLMConfig, LLMConfig, PydanticAILLMConfig
+from manager_ai.adapters.llm.config import ClaudeLLMConfig, LLMConfig, PydanticAILLMConfig
 
 
 def build_llm(cfg: LLMConfig) -> LLMPort:

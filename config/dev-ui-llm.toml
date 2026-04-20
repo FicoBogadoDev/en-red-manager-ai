@@ -26,7 +26,8 @@
 
 
 [reply_generation]
-	type = "llm"
+	type = "shared_llm"
+	shared = "llm"
 
 
 [tracking]
