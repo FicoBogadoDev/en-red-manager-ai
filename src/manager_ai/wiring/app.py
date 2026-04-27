@@ -18,6 +18,7 @@ from manager_ai.wiring.storage import build_storage
 from manager_ai.wiring.workflow import (
     build_extractor,
     build_message_classifier,
+    build_qualification,
     build_reply_generation,
     build_structured_extraction,
 )
@@ -42,6 +43,7 @@ def build_agent(config_path: Path):
         storage=build_storage(config.storage),
         extractor=build_extractor(config.extractor),
         classifier=build_message_classifier(config.message_classifier),
+        qualifier=build_qualification(config.qualification),
         structured_extractor=build_structured_extraction(config.structured_extraction),
         reply_generator=build_reply_generation(config.reply_generation),
         quote_drafter=MockQuoteDraftingAdapter(),

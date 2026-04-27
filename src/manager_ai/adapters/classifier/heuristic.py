@@ -1,7 +1,17 @@
 from __future__ import annotations
 
+import unicodedata
+
 from manager_ai.models.conversation import ContactThreadState, ConversationMessage, IntentType, JobState
 from manager_ai.ports.message_classifier import MessageClassifierPort
+
+_GREETING_ONLY = {"hola", "buenas", "buenos dias", "buen dia", "buenas tardes", "buenas noches"}
+
+
+def _normalized_text(text: str) -> str:
+    without_accents = unicodedata.normalize("NFKD", text)
+    ascii_text = without_accents.encode("ascii", "ignore").decode("ascii")
+    return " ".join(ascii_text.lower().strip(" .,!?").split())
 
 
 def _contains_any(text: str, fragments: tuple[str, ...]) -> bool:
@@ -16,9 +26,12 @@ class HeuristicMessageClassifier(MessageClassifierPort):
         message: ConversationMessage,
     ) -> IntentType:
         text = message.content.lower()
+        normalized_text = _normalized_text(message.content)
 
         if message.attachments and not text.strip():
             return IntentType.PROVIDE_EVIDENCE
+        if normalized_text in _GREETING_ONLY:
+            return IntentType.CHIT_CHAT
         if _contains_any(text, ("te sirve", "se puede mejorar", "descuento", "menos", "negoci", "podemos cerrar")):
             return IntentType.NEGOTIATION
         if _contains_any(text, ("reprogram", "reagend", "pasarlo", "otro dia", "otro día", "llueve")):

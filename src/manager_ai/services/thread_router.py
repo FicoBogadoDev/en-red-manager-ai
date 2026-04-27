@@ -17,6 +17,8 @@ def should_open_new_job(thread: ContactThreadState, intent: IntentType) -> bool:
         return True
     if intent == IntentType.NEW_INQUIRY and active_job.status in _TERMINAL_JOB_STATUSES:
         return True
+    if intent == IntentType.NEW_INQUIRY and active_job.status in {JobStatus.NEW, JobStatus.QUALIFYING}:
+        return False
     if intent == IntentType.NEW_INQUIRY and len(_active_jobs(thread)) >= 1:
         return True
     if active_job.updated_at <= utc_now() - timedelta(days=45):

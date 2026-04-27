@@ -4,6 +4,7 @@ from typing import Any
 from manager_ai.adapters.storage.memory import InMemoryStorageAdapter
 from manager_ai.agent.workflow_agent import Agent
 from manager_ai.models.conversation import IncomingMessage, JobStatus, ThreadStatus
+from manager_ai.ports.qualification import QualificationDecision, ServiceQualification
 
 
 class StubLLM:
@@ -19,6 +20,14 @@ class SpyMessaging:
         self.sent.append((to, text))
 
 
+class StubQualifier:
+    def __init__(self, result: ServiceQualification) -> None:
+        self.result = result
+
+    def qualify(self, *args: Any, **kwargs: Any) -> ServiceQualification:
+        return self.result
+
+
 def build_agent() -> tuple[Agent, InMemoryStorageAdapter, SpyMessaging]:
     storage = InMemoryStorageAdapter()
     messaging = SpyMessaging()
@@ -26,6 +35,20 @@ def build_agent() -> tuple[Agent, InMemoryStorageAdapter, SpyMessaging]:
         llm=StubLLM(),
         messaging=messaging,
         storage=storage,
+    )
+    return agent, storage, messaging
+
+
+def build_agent_with_qualifier(
+    qualifier: StubQualifier,
+) -> tuple[Agent, InMemoryStorageAdapter, SpyMessaging]:
+    storage = InMemoryStorageAdapter()
+    messaging = SpyMessaging()
+    agent = Agent(
+        llm=StubLLM(),
+        messaging=messaging,
+        storage=storage,
+        qualifier=qualifier,
     )
     return agent, storage, messaging
 
@@ -175,6 +198,100 @@ def test_non_service_request_is_disqualified() -> None:
     assert messaging.sent
     disqualify_event = next(event for event in thread.events if event.kind == "service_disqualified")
     assert disqualify_event.payload["route"] == "disqualify"
+
+
+def test_greeting_first_message_asks_for_clarification_without_disqualifying() -> None:
+    agent, storage, messaging = build_agent()
+    phone = "+5493410000009"
+
+    agent.handle_message(phone, "hola")
+
+    thread = storage.load_thread(phone)
+    assert thread is not None
+    job = thread.get_job(thread.active_job_id)
+    assert job is not None
+    assert job.status == JobStatus.QUALIFYING
+    assert thread.status == ThreadStatus.WAITING_ON_CUSTOMER
+    assert "redes de seguridad" in messaging.sent[-1][1]
+    event_kinds = [event.kind for event in thread.events]
+    assert "service_clarification_requested" in event_kinds
+    assert "service_disqualified" not in event_kinds
+
+
+def test_injected_qualifier_can_drive_unclear_reply() -> None:
+    qualifier = StubQualifier(
+        ServiceQualification(
+            decision=QualificationDecision.UNCLEAR,
+            reason="fake unclear",
+            reply="Es por redes de seguridad?",
+        )
+    )
+    agent, storage, messaging = build_agent_with_qualifier(qualifier)
+    phone = "+5493410000012"
+
+    agent.handle_message(phone, "hola")
+
+    thread = storage.load_thread(phone)
+    assert thread is not None
+    job = thread.get_job(thread.active_job_id)
+    assert job is not None
+    assert job.status == JobStatus.QUALIFYING
+    assert messaging.sent[-1][1] == "Es por redes de seguridad?"
+
+
+def test_injected_qualifier_can_drive_disqualification_reply() -> None:
+    qualifier = StubQualifier(
+        ServiceQualification(
+            decision=QualificationDecision.NOT_SERVICE,
+            reason="fake not service",
+            reply="No trabajamos ese tipo de red.",
+        )
+    )
+    agent, storage, messaging = build_agent_with_qualifier(qualifier)
+    phone = "+5493410000013"
+
+    agent.handle_message(phone, "hola")
+
+    thread = storage.load_thread(phone)
+    assert thread is not None
+    job = thread.get_job(thread.active_job_id)
+    assert job is not None
+    assert job.status == JobStatus.DISQUALIFIED
+    assert messaging.sent[-1][1] == "No trabajamos ese tipo de red."
+
+
+def test_service_request_after_greeting_reuses_qualifying_job() -> None:
+    agent, storage, _ = build_agent()
+    phone = "+5493410000010"
+
+    agent.handle_message(phone, "hola")
+    agent.handle_message(phone, "Necesito una red para balcon")
+
+    thread = storage.load_thread(phone)
+    assert thread is not None
+    assert len(thread.jobs) == 1
+    job = thread.get_job(thread.active_job_id)
+    assert job is not None
+    assert job.status == JobStatus.AWAITING_EVIDENCE
+    assert job.scope.installation_type == "balcony"
+
+
+def test_chitchat_during_open_service_job_does_not_disqualify() -> None:
+    agent, storage, _ = build_agent()
+    phone = "+5493410000011"
+
+    agent.handle_message(phone, "Hola, necesito red para balcon en Rosario")
+    agent.handle_message(phone, "jaja perfecto")
+
+    thread = storage.load_thread(phone)
+    assert thread is not None
+    assert len(thread.jobs) == 1
+    job = thread.get_job(thread.active_job_id)
+    assert job is not None
+    assert job.status != JobStatus.DISQUALIFIED
+    assert job.scope.installation_type == "balcony"
+    event_kinds = [event.kind for event in thread.events]
+    assert "service_disqualified" not in event_kinds
 
 
 def test_reused_job_emits_job_selected_event() -> None:

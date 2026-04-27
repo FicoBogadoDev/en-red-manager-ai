@@ -68,8 +68,8 @@ That means:
 - the wiring layer owns reference resolution rather than pushing that logic down
   into individual builders
 
-The current first slice of this pattern is implemented for LLM and
-reply-generation config.
+This pattern is implemented for LLM-backed components such as qualification
+and reply generation.
 
 ## Runnable configs
 
@@ -172,6 +172,28 @@ Fields by type:
 Default:
 - omitted sections default to `heuristic`
 
+### `qualification`
+
+Allowed `type` values:
+- `heuristic`
+- `shared_llm`
+- `llm`
+
+Fields by type:
+- `heuristic`: no extra fields
+- `shared_llm`: `shared`
+- `llm`: nested child section `[qualification.llm]` using the normal `LLMConfig` shape
+
+Default:
+- omitted sections default to `heuristic`
+
+Design note:
+- qualification returns one of `service`, `not_service`, or `unclear`
+- `unclear` keeps the job open and asks for clarification
+- raw `shared_llm` explicitly references shared config, currently only `shared = "llm"`
+- raw `llm` owns a local child LLM config under `[qualification.llm]`
+- resolution converts `shared_llm` into an effective local `llm` config before builders run
+
 ### `reply_generation`
 
 Allowed `type` values:
@@ -254,5 +276,6 @@ Example of a component owning its own child LLM config:
 ```
 
 Those examples now match the active raw config schema for `reply_generation`.
-The resolved builder-facing config is simpler and always carries a concrete
-child `LLMConfig` when the reply generator is LLM-backed.
+The same shape is supported by `qualification`. The resolved builder-facing
+config is simpler and always carries a concrete child `LLMConfig` when a
+component is LLM-backed.

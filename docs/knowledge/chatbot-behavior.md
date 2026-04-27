@@ -47,6 +47,8 @@ Non-service requests should be politely closed out or redirected rather than ent
 Current operational meaning:
 
 - requests outside En Red's service are disqualified
+- unclear first messages or casual chat are not treated as disqualification evidence
+- when service fit is unclear, the chatbot should ask a short clarifying question
 - the thread remains visible rather than deleted
 - the customer still gets a reply instead of silent failure
 

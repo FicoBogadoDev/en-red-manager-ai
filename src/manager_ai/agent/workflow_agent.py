@@ -4,6 +4,7 @@ from collections.abc import Iterable
 from typing import TYPE_CHECKING
 
 from manager_ai.adapters.classifier.heuristic import HeuristicMessageClassifier
+from manager_ai.adapters.qualification.heuristic import HeuristicQualificationAdapter
 from manager_ai.adapters.quote_drafting.mock import MockQuoteDraftingAdapter
 from manager_ai.adapters.reminder.mock import MockReminderAdapter
 from manager_ai.adapters.reply_generation.rules import RulesConversationReplyAdapter
@@ -32,6 +33,7 @@ from manager_ai.ports.conversation_reply import ConversationReplyPort
 from manager_ai.ports.llm import LLMPort
 from manager_ai.ports.message_classifier import MessageClassifierPort
 from manager_ai.ports.messaging import MessagingPort
+from manager_ai.ports.qualification import QualificationDecision, QualificationPort
 from manager_ai.ports.quote_drafting import QuoteDraftingPort
 from manager_ai.ports.reminder import ReminderPort
 from manager_ai.ports.scheduling import SchedulingPort
@@ -47,6 +49,11 @@ from manager_ai.services.thread_router import add_job, select_job
 if TYPE_CHECKING:
     from manager_ai.ports.extractor import ExtractorPort
 
+SERVICE_CLARIFICATION_MESSAGE = (
+    "Hola! Gracias por escribirnos. En Red Rosario instalamos redes de seguridad "
+    "para balcones, techos y escaleras. Es por ese tipo de instalacion?"
+)
+
 
 class Agent:
     def __init__(
@@ -56,6 +63,7 @@ class Agent:
         storage: ConversationRepositoryPort,
         extractor: "ExtractorPort | None" = None,
         classifier: MessageClassifierPort | None = None,
+        qualifier: QualificationPort | None = None,
         structured_extractor: StructuredExtractionPort | None = None,
         reply_generator: ConversationReplyPort | None = None,
         quote_drafter: QuoteDraftingPort | None = None,
@@ -67,6 +75,7 @@ class Agent:
         self._storage = storage
         self._extractor = extractor
         self._classifier = classifier or HeuristicMessageClassifier()
+        self._qualifier = qualifier or HeuristicQualificationAdapter()
         self._structured_extractor = (
             structured_extractor or HeuristicStructuredExtractionAdapter()
         )
@@ -177,7 +186,12 @@ class Agent:
         before_missing_fields = list(job.missing_fields)
         before_job_snapshot = job.model_dump(mode="json")
 
-        if not self._is_service_request(normalized_message.content, job):
+        service_qualification = self._qualifier.qualify(
+            thread=thread,
+            job=job,
+            message=normalized_message,
+        )
+        if service_qualification.decision == QualificationDecision.NOT_SERVICE:
             job.status = JobStatus.DISQUALIFIED
             job.closure_reason = "not_enred_service"
             thread.status = ThreadStatus.WAITING_ON_INTERNAL
@@ -193,11 +207,15 @@ class Agent:
                         "thread_status_after": thread.status.value,
                         "job_status_before": job_status_before,
                         "job_status_after": job.status.value,
+                        "qualification_reason": service_qualification.reason,
                     },
                 )
             )
             outbound_messages.append(
-                OutboundMessage(to=thread.phone, text=NOT_QUALIFIED_MESSAGE)
+                OutboundMessage(
+                    to=thread.phone,
+                    text=service_qualification.reply or NOT_QUALIFIED_MESSAGE,
+                )
             )
             self._replace_job(thread, job)
             self._append_outbound_messages_to_history(thread, outbound_messages)
@@ -209,6 +227,40 @@ class Agent:
                 job_status_before=job_status_before,
             )
             self._persist(thread, job, "job_disqualified")
+            return WorkflowResult(thread=thread, outbound_messages=outbound_messages)
+        if service_qualification.decision == QualificationDecision.UNCLEAR:
+            thread.status = ThreadStatus.WAITING_ON_CUSTOMER
+            thread.events.append(
+                ConversationEvent(
+                    kind="service_clarification_requested",
+                    job_id=job.id,
+                    summary="Message did not contain enough service-fit evidence",
+                    payload={
+                        "route": route,
+                        "intent": intent.value,
+                        "thread_status_before": thread_status_before,
+                        "thread_status_after": thread.status.value,
+                        "job_status": job.status.value,
+                        "qualification_reason": service_qualification.reason,
+                    },
+                )
+            )
+            outbound_messages.append(
+                OutboundMessage(
+                    to=thread.phone,
+                    text=service_qualification.reply or SERVICE_CLARIFICATION_MESSAGE,
+                )
+            )
+            self._replace_job(thread, job)
+            self._append_outbound_messages_to_history(thread, outbound_messages)
+            self._record_outbound_events(thread, job, outbound_messages, route, intent)
+            self._record_status_change_events(
+                thread=thread,
+                job=job,
+                thread_status_before=thread_status_before,
+                job_status_before=job_status_before,
+            )
+            self._persist(thread, job, "service_clarification_requested")
             return WorkflowResult(thread=thread, outbound_messages=outbound_messages)
 
         job = self._structured_extractor.extract(

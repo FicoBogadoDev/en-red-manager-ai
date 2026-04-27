@@ -45,6 +45,22 @@
 # 	type = "heuristic"
 
 
+[qualification]
+	type = "heuristic"
+
+# [qualification]
+# 	type = "shared_llm"
+# 	shared = "llm"
+
+# [qualification]
+# 	type = "llm"
+
+# [qualification.llm]
+# 	type = "claude"
+# 	model = "claude-haiku-4-5"
+# 	api_key_env = "ANTHROPIC_API_KEY"
+
+
 [structured_extraction]
 	type = "llm"
 	model = "claude-sonnet-4-6"

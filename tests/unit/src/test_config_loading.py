@@ -15,6 +15,7 @@ def test_reference_config_parses() -> None:
     assert config.llm.type == "pydantic_ai"
     assert config.messaging.type == "log"
     assert config.storage.type == "json"
+    assert config.qualification.type == "heuristic"
 
 
 def test_dev_no_api_builds_agent() -> None:
@@ -37,6 +38,7 @@ def test_dev_ui_config_parses() -> None:
     assert raw_config.reply_generation.shared == "llm"
     assert config.reply_generation.type == "llm"
     assert config.reply_generation.llm.type == "pydantic_ai"
+    assert config.qualification.type == "heuristic"
 
 
 def test_reply_generation_can_use_local_child_llm(tmp_path: Path) -> None:
@@ -69,4 +71,70 @@ def test_reply_generation_can_use_local_child_llm(tmp_path: Path) -> None:
 
     assert config.reply_generation.type == "llm"
     assert config.reply_generation.llm.type == "log"
+    assert agent is not None
+
+
+def test_qualification_can_use_shared_llm(tmp_path: Path) -> None:
+    config_path = tmp_path / "shared-qualification.toml"
+    config_path.write_text(
+        "\n".join(
+            [
+                "[llm]",
+                '\ttype = "log"',
+                "",
+                "[messaging]",
+                '\ttype = "log"',
+                "",
+                "[storage]",
+                '\ttype = "memory"',
+                "",
+                "[qualification]",
+                '\ttype = "shared_llm"',
+                '\tshared = "llm"',
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    raw_config = load_raw_app_config(config_path)
+    config = load_app_config(config_path)
+    agent = build_agent(config_path)
+
+    assert raw_config.qualification.type == "shared_llm"
+    assert config.qualification.type == "llm"
+    assert config.qualification.llm.type == "log"
+    assert agent is not None
+
+
+def test_qualification_can_use_local_child_llm(tmp_path: Path) -> None:
+    config_path = tmp_path / "local-qualification.toml"
+    config_path.write_text(
+        "\n".join(
+            [
+                "[llm]",
+                '\ttype = "log"',
+                "",
+                "[messaging]",
+                '\ttype = "log"',
+                "",
+                "[storage]",
+                '\ttype = "memory"',
+                "",
+                "[qualification]",
+                '\ttype = "llm"',
+                "",
+                "[qualification.llm]",
+                '\ttype = "log"',
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    config = load_app_config(config_path)
+    agent = build_agent(config_path)
+
+    assert config.qualification.type == "llm"
+    assert config.qualification.llm.type == "log"
     assert agent is not None

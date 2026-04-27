@@ -16,7 +16,7 @@ Key implementation characteristics:
 - Python 3.12 project with FastAPI entry points
 - ports-and-adapters structure in `src/manager_ai/`
 - persisted thread state in JSON storage by default
-- configurable classifier, structured extraction, reply generation, and LLM adapters
+- configurable classifier, qualification, structured extraction, reply generation, and LLM adapters
 - mocked commercial and operational integrations where production integrations do not exist yet
 
 The main runtime entry point is the workflow-oriented `Agent` in `src/manager_ai/agent/workflow_agent.py`.
@@ -62,7 +62,7 @@ More concretely, `workflow_agent.Agent` currently does this for each incoming me
 2. Normalize and append the inbound message to thread history.
 3. Record workflow events such as incoming message, detected intent, and selected route.
 4. Reuse the active job or create a new `JobState` through `thread_router`.
-5. Disqualify non-service requests early.
+5. Disqualify explicit non-service requests early, or ask for service clarification when the message is ambiguous.
 6. Run structured extraction on the message.
 7. Recompute missing fields and evidence/scoping status.
 8. Optionally create quote, scheduling, reminder, escalation, and reply outputs.
@@ -148,6 +148,7 @@ The current builder surface supports:
 - LLM adapters: `pydantic_ai`, `claude`, `log`
 - storage adapters: `json`, `memory`
 - message classifier adapters: `heuristic`, `llm`
+- qualification adapters: `heuristic`, `shared_llm`, `llm`
 - structured extraction adapters: `heuristic`, `llm`
 - reply generation adapters: `rules`, `shared_llm`, `llm`
 - tracking modes: `mlflow`, `off`
@@ -167,7 +168,7 @@ implicit in builder fallback. In other words, when a component reuses a shared
 config profile, the config should say so; when it owns a child dependency, that
 child should appear as a real nested config section.
 
-`reply_generation` now reflects that rule directly:
+`qualification` and `reply_generation` now reflect that rule directly:
 
 - raw TOML may use `type = "shared_llm"` with `shared = "llm"` to refer to the
   top-level LLM config explicitly
@@ -182,16 +183,33 @@ not been introduced yet.
 
 ## Current Service Rules Reflected In Code
 
+### Qualification
+
+Qualification is an injected dependency behind `QualificationPort`.
+
+Current configured implementations:
+
+- `heuristic`: deterministic keyword and existing-job evidence checks
+- `llm`: structured LLM classification returning `service`, `not_service`, or `unclear`
+
+The workflow agent owns the state transitions after the qualifier returns a decision:
+
+- `service` continues into structured extraction and evidence intake
+- `not_service` disqualifies the job and sends the not-qualified reply
+- `unclear` keeps the job open and asks a service-fit clarification question
+
 ### Job selection
 
 `src/manager_ai/services/thread_router.py` currently opens a new job when:
 
 - there is no active job
 - a new inquiry arrives while the active job is terminal
-- a new inquiry arrives while there is already an active non-terminal job
+- a new inquiry arrives while there is already an active non-terminal job that has moved beyond initial qualification
 - the active job is older than 45 days
 
 Otherwise, the active job is reused.
+
+The router keeps a still-qualifying active job open when the customer follows a greeting or vague first message with a real service request.
 
 ### Missing fields and scoping
 
