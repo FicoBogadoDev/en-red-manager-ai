@@ -43,6 +43,36 @@ Keep entries practical:
 - Expanded `implementation-architecture.md` with the actual runtime flow, persisted models, config modes, and service-level rules reflected in code.
 - Updated `active-context.md` to track the next documentation questions and gaps.
 
+## 2026-04-27
+
+### Message flow diagram
+
+- Added `message-flow-diagram.md` to show the rough end-to-end path from inbound message through routing, extraction, workflow services, persistence, and outbound reply generation.
+- Linked the new diagram from the maintained documentation hub so it is easy to find alongside the behavior and implementation docs.
+- Added `message-flow-diagram.html` as a standalone browser-rendered view while keeping the Mermaid markdown file as the editable source of truth.
+- Simplified Mermaid node labels after the first browser render exposed a syntax-parsing issue in Mermaid 11.14.0.
+
+### Qualification softening and dependency injection
+
+- Investigated why qualification was too harsh: the workflow treated missing service evidence as non-service evidence, so greetings like `hola` could receive a negative response and casual follow-up could disqualify an open job.
+- Changed the active workflow qualification decision to preserve three outcomes: `service`, `not_service`, and `unclear`.
+- Added clarification behavior for unclear messages so the job remains open and the customer is asked whether they need En Red's safety-net service.
+- Added `QualificationPort` plus heuristic and LLM-backed qualification adapters, then wired qualification through TOML config with `heuristic`, `shared_llm`, and local child `llm` options.
+- Kept workflow state transitions in `workflow_agent.Agent`; qualifiers decide service fit, while the agent still owns disqualification, clarification, extraction, persistence, and outbound events.
+- Updated configuration docs, reference TOML, and maintained architecture/behavior docs to reflect the new injectable qualification dependency.
+- Added regression tests for greetings, request-after-greeting job reuse, chitchat on an open service job, injected qualifier behavior, LLM qualification parsing, and config resolution.
+
+### Verification
+
+- `uv run pytest tests/unit/src/adapters/test_qualification.py tests/unit/src/agent/test_workflow_agent.py tests/unit/src/test_config_loading.py -q` passed.
+- `uv run pytest tests/unit/src -q` passed with 29 passing tests and 2 skipped tests.
+- Full `uv run pytest -q` still stops during integration collection because `mlflow` and `instructor` are missing in the current environment; this appears unrelated to the qualification work.
+
+### Follow-up
+
+- Decide whether to remove or migrate the older binary `services/qualification.py` flow once no active entrypoint needs it.
+- Consider richer evaluation data for the LLM qualifier before enabling it in a production-like config.
+
 ## 2026-04-18
 
 ### Config and wiring cleanup

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manager AI Message Flow</title>
+  <style>
+    :root {
+      --bg: #f4f1ea;
+      --panel: #fffaf2;
+      --ink: #1f2933;
+      --muted: #52606d;
+      --accent: #b44d24;
+      --border: #decdb8;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, #fff7ea 0, transparent 32%),
+        radial-gradient(circle at bottom right, #f6e7d2 0, transparent 28%),
+        var(--bg);
+    }
+
+    main {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 40px 24px 64px;
+    }
+
+    .hero {
+      margin-bottom: 24px;
+      padding: 28px 30px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: linear-gradient(135deg, #fffdf8, #fff4e3);
+      box-shadow: 0 18px 40px rgba(68, 47, 24, 0.08);
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(2rem, 3vw, 3.3rem);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      margin: 0;
+      max-width: 70ch;
+      font-size: 1.05rem;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+
+    .diagram-card {
+      padding: 20px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: var(--panel);
+      box-shadow: 0 18px 40px rgba(68, 47, 24, 0.08);
+      overflow: auto;
+    }
+
+    .mermaid {
+      min-width: 1100px;
+    }
+
+    .notes {
+      margin-top: 22px;
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .note {
+      padding: 16px 18px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(255, 252, 246, 0.95);
+    }
+
+    .note h2 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+    }
+
+    .note p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 0.98rem;
+    }
+
+    code {
+      color: var(--accent);
+      font-size: 0.96em;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero">
+      <h1>Message Flow</h1>
+      <p class="subtitle">
+        Rough end-to-end path for one inbound message through Manager AI, from transport and
+        thread loading to workflow decisions, persistence, and outbound reply delivery.
+      </p>
+    </section>
+
+    <section class="diagram-card">
+      <pre class="mermaid">
+flowchart TD
+    A["Inbound message<br/>phone + text"] --> B["FastAPI route<br/>api/routes.py"]
+    B --> C["App wiring builds agent from TOML config<br/>api/main.py + src/manager_ai/wiring"]
+    C --> D["Agent.handle_message()<br/>creates IncomingMessage"]
+    D --> E["Load or create thread<br/>ContactThreadState"]
+    E --> F["Normalize and append inbound message<br/>record incoming_message event"]
+    F --> G["Classify intent<br/>MessageClassifierPort"]
+    G --> H["Select route<br/>record intent_detected and route_selected"]
+    H --> I{"Reuse active job<br/>or create new job?"}
+    I -->|Reuse| J["Use existing JobState<br/>record job_selected"]
+    I -->|Create| K["Create new JobState via thread_router<br/>record job_created"]
+    J --> L{"Is this an En Red service request?"}
+    K --> L
+    L -->|No| M["Mark job disqualified<br/>append not-qualified reply"]
+    L -->|Yes| N["Run structured extraction<br/>update job data"]
+    N --> O["Recompute missing fields and evidence status<br/>record extraction/missing-field events"]
+    O --> P["Quote handling<br/>ensure_quote()"]
+    P --> Q["Scheduling handling<br/>handle_scheduling()"]
+    Q --> R["Closure and follow-up handling<br/>apply_closure_updates()"]
+    R --> S{"Any outbound reply already prepared?"}
+    M --> T["Append outbound message(s) to history<br/>record outbound/status events"]
+    S -->|Yes| T
+    S -->|No| U{"Job status after processing?"}
+    U -->|scoping| V["Promote to estimate_ready<br/>reply: ready for quote/review"]
+    U -->|awaiting_evidence| W["Reply with next missing-field question"]
+    U -->|Other| X["Generate fallback conversational reply"]
+    V --> T
+    W --> T
+    X --> T
+    T --> Y["Create escalation actions if needed"]
+    Y --> Z["Persist updated thread/job<br/>via repository or storage adapter"]
+    Z --> AA["Send outbound message(s)<br/>via messaging adapter"]
+    Z --> AB["Return workflow result<br/>with thread, outbound messages, external actions"]
+      </pre>
+    </section>
+
+    <section class="notes">
+      <article class="note">
+        <h2>Source of truth</h2>
+        <p>The editable source stays in <code>message-flow-diagram.md</code>. This page is just a browser renderer.</p>
+      </article>
+      <article class="note">
+        <h2>Best use</h2>
+        <p>Use this for quick orientation and walkthroughs. Use the markdown file when the flow changes.</p>
+      </article>
+      <article class="note">
+        <h2>Related code</h2>
+        <p>The main implementation lives in <code>src/manager_ai/agent/workflow_agent.py</code> plus the service modules it calls.</p>
+      </article>
+    </section>
+  </main>
+
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "base",
+      themeVariables: {
+        primaryColor: "#f8e4c7",
+        primaryTextColor: "#1f2933",
+        primaryBorderColor: "#b44d24",
+        lineColor: "#7b5e46",
+        secondaryColor: "#fff8ee",
+        tertiaryColor: "#f3ede2",
+        fontFamily: "Georgia, Times New Roman, serif",
+      },
+      flowchart: {
+        curve: "bumpX",
+        htmlLabels: true,
+      },
+    });
+  </script>
+</body>
+</html>

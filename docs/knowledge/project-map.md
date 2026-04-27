@@ -42,6 +42,7 @@ Some of these are still useful, but parts may lag behind the latest workflow. Pr
 - Start here when you want the current documentation map.
 - Jump to `chatbot-behavior.md` for intended workflow and business behavior.
 - Jump to `implementation-architecture.md` for technical structure and code reality.
+- Jump to `message-flow-diagram.md` for a visual end-to-end message path.
 - Jump to `active-context.md` for what matters right now.
 - Jump to `work-log.md` for day-by-day history.
 

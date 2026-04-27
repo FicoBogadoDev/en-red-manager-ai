@@ -25,6 +25,10 @@ Those should stay under `docs/research/` or other report-specific locations.
   Intended chatbot behavior, workflow rules, and operational expectations
 - `implementation-architecture.md`
   Current code structure, runtime wiring, and technical reality
+- `message-flow-diagram.md`
+  Visual overview of how one inbound message moves through the app
+- `message-flow-diagram.html`
+  Standalone browser-rendered view of the same flow
 - `active-context.md`
   Current priorities, constraints, and open questions
 - `work-log.md`
