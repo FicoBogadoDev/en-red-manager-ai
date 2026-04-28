@@ -130,7 +130,7 @@ Keep entries practical:
 - Fixed Anthropic SDK typing issues in `ClaudeAdapter` by converting only `user` and `assistant` turns into Anthropic `MessageParam` values and reading only text response blocks.
 - Moved Claude API key environment lookup out of `ClaudeAdapter`; TOML still stores `api_key_env`, but `wiring/llm.py` now resolves the environment value before constructing the adapter.
 - Changed `LLMPort.complete()` to take `system_prompt: str` separately from `messages: list[Message]`.
-- Updated Claude, PydanticAI, log, qualification, reply-generation, tracing, service call sites, and test fakes to follow the new LLM boundary.
+- Updated Claude, log, qualification, reply-generation, tracing, service call sites, and test fakes to follow the new LLM boundary.
 
 ### Design decisions
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel
 
-from manager_ai.adapters.llm.config import LLMConfig
+from manager_ai.adapters.llm.text_generation.config import LLMConfig
 from manager_ai.adapters.qualification.config import QualificationConfig
 from manager_ai.adapters.reply_generation.config import ReplyGenerationConfig
 from manager_ai.wiring.settings import (

@@ -18,7 +18,7 @@ import os
 
 from dotenv import load_dotenv
 
-from manager_ai.adapters.llm.claude import ClaudeAdapter
+from manager_ai.adapters.llm.text_generation.claude import ClaudeAdapter
 from manager_ai.adapters.messaging.log import LogMessagingAdapter
 from manager_ai.adapters.storage.memory import InMemoryStorageAdapter
 from manager_ai.agent.agent import Agent

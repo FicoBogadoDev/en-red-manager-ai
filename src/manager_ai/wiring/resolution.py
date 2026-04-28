@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from manager_ai.adapters.llm.config import LLMConfig
+from manager_ai.adapters.llm.text_generation.config import LLMConfig
 from manager_ai.adapters.qualification.config import (
     HeuristicQualificationConfig,
     LLMQualificationConfig,

@@ -16,8 +16,8 @@ class MLFlowTrackedAgent:
     automatically as child spans. InstructorExtractor defers instructor.from_anthropic()
     until the first collect() call so the autolog patch is already active by then.
 
-    For PydanticAI (which autolog cannot intercept), the LLM adapter is
-    monkey-patched at construction time to wrap calls with explicit mlflow.start_span() traces.
+    The LLM adapter is monkey-patched at construction time to wrap calls with
+    explicit mlflow.start_span() traces.
 
     Each handle_message() call produces:
       - One MLflow run with business metrics (stage, fields collected, etc.)
@@ -34,7 +34,7 @@ class MLFlowTrackedAgent:
             self._patch_extractor()
 
     def _maybe_enable_anthropic_autolog(self) -> None:
-        from manager_ai.adapters.llm.claude import ClaudeAdapter
+        from manager_ai.adapters.llm.text_generation.claude import ClaudeAdapter
         from manager_ai.adapters.extractor.instructor_extractor import InstructorExtractor
         if isinstance(self._agent._llm, ClaudeAdapter) or isinstance(self._agent._extractor, InstructorExtractor):
             import mlflow.anthropic

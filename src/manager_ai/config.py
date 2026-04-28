@@ -1,9 +1,8 @@
 from manager_ai.wiring.app import build_agent
-from manager_ai.adapters.llm.config import (
+from manager_ai.adapters.llm.text_generation.config import (
     ClaudeLLMConfig,
     LLMConfig,
     LogLLMConfig,
-    PydanticAILLMConfig,
 )
 from manager_ai.adapters.reply_generation.config import (
     LLMReplyGenerationConfig,
@@ -64,7 +63,6 @@ __all__ = [
     "MessagingConfig",
     "MLFlowTrackingConfig",
     "NoTrackingConfig",
-    "PydanticAILLMConfig",
     "RawAppConfig",
     "RawLLMQualificationConfig",
     "RawLLMReplyGenerationConfig",

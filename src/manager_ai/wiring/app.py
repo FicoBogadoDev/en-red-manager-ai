@@ -8,7 +8,7 @@ from manager_ai.adapters.quote_drafting.mock import MockQuoteDraftingAdapter
 from manager_ai.adapters.reminder.mock import MockReminderAdapter
 from manager_ai.adapters.scheduling.mock import MockSchedulingAdapter
 from manager_ai.agent.workflow_agent import Agent
-from manager_ai.wiring.llm import build_llm
+from manager_ai.adapters.llm.text_generation.factory import build_llm
 from manager_ai.wiring.messaging import build_messaging
 from manager_ai.wiring.raw_app_config import RawAppConfig
 from manager_ai.wiring.resolution import resolve_app_config

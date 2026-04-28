@@ -2,14 +2,9 @@
 # to be used directly as a runnable environment config.
 
 [llm]
-	type = "pydantic_ai"
+	type = "claude"
 	model = "claude-sonnet-4-6"
 	api_key_env = "ANTHROPIC_API_KEY"
-
-# [llm]
-# 	type = "claude"
-# 	model = "claude-sonnet-4-6"
-# 	api_key_env = "ANTHROPIC_API_KEY"
 
 # [llm]
 # 	type = "log"

@@ -23,7 +23,7 @@ import os
 from dotenv import load_dotenv
 
 from manager_ai.adapters.extractor.instructor_extractor import InstructorExtractor
-from manager_ai.adapters.llm.log import LogLLMAdapter
+from manager_ai.adapters.llm.text_generation.log import LogLLMAdapter
 from manager_ai.adapters.messaging.log import LogMessagingAdapter
 from manager_ai.adapters.storage.memory import InMemoryStorageAdapter
 from manager_ai.agent.agent import Agent

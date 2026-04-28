@@ -12,7 +12,7 @@ def test_reference_config_parses() -> None:
 
     config = load_app_config(config_path)
 
-    assert config.llm.type == "pydantic_ai"
+    assert config.llm.type == "claude"
     assert config.messaging.type == "log"
     assert config.storage.type == "json"
     assert config.qualification.type == "heuristic"
@@ -37,7 +37,7 @@ def test_dev_ui_config_parses() -> None:
     assert raw_config.reply_generation.type == "shared_llm"
     assert raw_config.reply_generation.shared == "llm"
     assert config.reply_generation.type == "llm"
-    assert config.reply_generation.llm.type == "pydantic_ai"
+    assert config.reply_generation.llm.type == "claude"
     assert config.qualification.type == "heuristic"
 
 

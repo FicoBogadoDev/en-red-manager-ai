@@ -48,7 +48,7 @@ The project still follows a ports-and-adapters shape:
 - `src/manager_ai/ports/`
   Protocol-style interfaces for LLM, storage, messaging, and extractor behavior.
 - `src/manager_ai/adapters/`
-  Concrete implementations for Anthropic/PydanticAI LLM calls, Instructor extraction, JSON-file storage, memory storage, and log-based messaging.
+  Concrete implementations for Anthropic LLM calls, model-backed classification and extraction, JSON-file storage, memory storage, and log-based messaging.
 - `nice_gui_app/`
   A local chat UI for browsing saved conversations and manually driving the agent.
 
@@ -103,7 +103,7 @@ This means the system is stateful across runs as long as the JSON files remain a
 The repo currently contains two practical config variants:
 
 - `config/dev.toml`
-  Uses PydanticAI for LLM calls, Instructor for extraction, JSON-file storage, log messaging, and MLflow tracking.
+  Uses the Claude text-generation adapter, Instructor for extraction, JSON-file storage, log messaging, and MLflow tracking.
 - `config/dev-no-api.toml`
   Uses log-based LLM output, JSON-file storage, log messaging, no extractor, and no tracking. This is the cheapest local path because it avoids external API calls.
 

@@ -14,7 +14,7 @@ Then open the MLflow UI to inspect the results:
 
 from pathlib import Path
 
-from manager_ai.adapters.llm.log import LogLLMAdapter
+from manager_ai.adapters.llm.text_generation.log import LogLLMAdapter
 from manager_ai.adapters.messaging.log import LogMessagingAdapter
 from manager_ai.adapters.storage.memory import InMemoryStorageAdapter
 from manager_ai.agent.agent import Agent

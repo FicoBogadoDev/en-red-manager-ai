@@ -12,7 +12,7 @@ from manager_ai.ports.conversation_reply import ConversationReplyPort
 from manager_ai.ports.message_classifier import MessageClassifierPort
 from manager_ai.ports.qualification import QualificationPort
 from manager_ai.ports.structured_extraction import StructuredExtractionPort
-from manager_ai.wiring.llm import build_llm
+from manager_ai.adapters.llm.text_generation.factory import build_llm
 from manager_ai.wiring.settings import (
     ExtractorConfig,
     InstructorExtractorConfig,

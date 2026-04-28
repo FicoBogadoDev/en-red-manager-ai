@@ -475,7 +475,7 @@
               <tr>
                 <td><code>llm</code></td>
                 <td><code>adapters/classifier/llm.py</code></td>
-                <td>PydanticAI asks the model to classify the latest client turn using recent thread history.</td>
+                <td>The model-backed classifier evaluates the latest client turn using recent thread history.</td>
                 <td>Preferred for stronger conversation understanding</td>
               </tr>
             </tbody>
@@ -711,8 +711,8 @@
             <tbody>
               <tr>
                 <td>LLM</td>
-                <td><code>pydantic_ai</code></td>
-                <td>Real Anthropic-backed model calls through PydanticAI</td>
+                <td><code>claude</code></td>
+                <td>Real Anthropic-backed text-generation calls through the Claude adapter</td>
               </tr>
               <tr>
                 <td>Message classifier</td>

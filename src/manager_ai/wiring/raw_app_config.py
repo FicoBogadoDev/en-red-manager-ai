@@ -4,7 +4,7 @@ from typing import Annotated, Literal, Union
 
 from pydantic import BaseModel, Field
 
-from manager_ai.adapters.llm.config import LLMConfig
+from manager_ai.adapters.llm.text_generation.config import LLMConfig
 from manager_ai.adapters.qualification.config import HeuristicQualificationConfig
 from manager_ai.wiring.settings import (
     ExtractorConfig,

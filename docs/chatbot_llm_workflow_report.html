@@ -307,7 +307,7 @@
           </div>
           <div class="stat">
             <strong>1</strong>
-            <span>Shared transport adapter: <code>PydanticAIAdapter</code></span>
+            <span>Shared transport adapter: <code>ClaudeAdapter</code></span>
           </div>
           <div class="stat">
             <strong>8</strong>
@@ -359,29 +359,29 @@
         <p class="eyebrow">Shared Transport</p>
         <h2>How The Base LLM Adapter Works</h2>
         <p>
-          The low-level model transport is <code>PydanticAIAdapter</code>. It implements the generic
-          <code>LLMPort</code> and is currently configured against Anthropic models via
-          <code>pydantic_ai</code>.
+          The low-level model transport is <code>ClaudeAdapter</code>. It implements the generic
+          <code>LLMPort</code> and is currently configured directly against Anthropic models.
         </p>
         <div class="grid">
           <div class="card">
             <h3>System prompt handling</h3>
             <p>
-              The adapter pulls the first <code>system</code> message out of the message list and passes it into
-              PydanticAI as <code>instructions=</code>.
+              The adapter receives the system prompt separately from the conversation messages and sends both to
+              the Anthropic message API.
             </p>
           </div>
           <div class="card">
             <h3>History handling</h3>
             <p>
-              Prior user and assistant messages become PydanticAI message history objects. The last non-system message
-              is treated as the current prompt input.
+              Prior user and assistant messages are sent as Anthropic message history. The system prompt remains
+              separate from the turn history.
             </p>
           </div>
           <div class="card">
             <h3>Stateless call pattern</h3>
             <p>
-              A fresh PydanticAI agent is created per call. This keeps the adapter simple and avoids hidden cached state.
+              Each call is handled directly through the Anthropic client. This keeps the adapter simple and avoids
+              hidden cached state.
             </p>
           </div>
           <div class="card">
@@ -501,7 +501,7 @@ Si la respuesta base ya es correcta, podés reformularla suavemente sin cambiar 
           NiceGUI now defaults to <code>config/dev-ui-llm.toml</code>, which enables the real model-backed path:
         </p>
         <pre>[llm]
-type = "pydantic_ai"
+type = "claude"
 model = "claude-sonnet-4-6"
 api_key_env = "ANTHROPIC_API_KEY"
 

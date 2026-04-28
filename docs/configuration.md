@@ -82,12 +82,10 @@ and reply generation.
 ### `llm`
 
 Allowed `type` values:
-- `pydantic_ai`
 - `claude`
 - `log`
 
 Fields by type:
-- `pydantic_ai`: `model`, `api_key_env`
 - `claude`: `model`, `api_key_env`
 - `log`: no extra fields
 
@@ -95,7 +93,7 @@ Example:
 
 ```toml
 [llm]
-	type = "pydantic_ai"
+	type = "claude"
 	model = "claude-sonnet-4-6"
 	api_key_env = "ANTHROPIC_API_KEY"
 ```
@@ -254,7 +252,7 @@ Example of reusing a runtime-shared LLM explicitly:
 
 ```toml
 [llm]
-	type = "pydantic_ai"
+	type = "claude"
 	model = "claude-sonnet-4-6"
 	api_key_env = "ANTHROPIC_API_KEY"
 

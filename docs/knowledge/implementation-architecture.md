@@ -118,7 +118,7 @@ Other important persisted structures include:
 Current practical config variants:
 
 - `config/dev.toml`
-  PydanticAI LLM, Instructor extractor, JSON storage, log messaging, and MLflow tracking
+  Claude text-generation LLM, Instructor extractor, JSON storage, log messaging, and MLflow tracking
 - `config/dev-no-api.toml`
   Log LLM, JSON storage, log messaging, no extractor config, and no tracking
 - `config/dev-ui-llm.toml`
@@ -128,7 +128,7 @@ Current practical config variants:
 
 The current config parsing and assembly path is split between:
 
-- `src/manager_ai/adapters/llm/config.py`
+- `src/manager_ai/adapters/llm/text_generation/config.py`
   effective LLM config contract near the LLM adapter family
 - `src/manager_ai/adapters/reply_generation/config.py`
   effective reply-generation config contract near the reply-generation adapters
@@ -145,7 +145,7 @@ The current config parsing and assembly path is split between:
 
 The current builder surface supports:
 
-- LLM adapters: `pydantic_ai`, `claude`, `log`
+- LLM adapters: `claude`, `log`
 - storage adapters: `json`, `memory`
 - message classifier adapters: `heuristic`, `llm`
 - qualification adapters: `heuristic`, `shared_llm`, `llm`
