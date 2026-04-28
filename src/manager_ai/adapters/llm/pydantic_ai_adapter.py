@@ -22,16 +22,11 @@ class PydanticAIAdapter:
             os.environ["ANTHROPIC_API_KEY"] = api_key
         self._model_id = f"anthropic:{model}"
 
-    def complete(self, messages: list[Message]) -> str:
-        system_msgs = [m for m in messages if m.role == "system"]
-        convo_msgs = [m for m in messages if m.role != "system"]
-
-        system_text = system_msgs[0].content if system_msgs else ""
-
-        if not convo_msgs:
+    def complete(self, system_prompt: str, messages: list[Message]) -> str:
+        if not messages:
             return ""
 
-        *history_msgs, last_user = convo_msgs
+        *history_msgs, last_user = messages
 
         # Build PydanticAI message history from prior conversation turns.
         pydantic_history: list[ModelRequest | ModelResponse] = []
@@ -51,7 +46,7 @@ class PydanticAIAdapter:
         agent: PydanticAgent[None, str] = PydanticAgent(
             model=self._model_id,
             output_type=str,
-            instructions=system_text,
+            instructions=system_prompt,
         )
 
         result = run_coro_sync(

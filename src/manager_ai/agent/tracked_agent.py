@@ -43,12 +43,18 @@ class MLFlowTrackedAgent:
     def _patch_llm(self) -> None:
         original_complete = self._agent._llm.complete
 
-        def traced_complete(messages: list[Message]) -> str:
+        def traced_complete(system_prompt: str, messages: list[Message]) -> str:
             with mlflow.start_span("llm.complete", span_type=SpanType.LLM) as span:
                 span.set_inputs(
-                    {"messages": [{"role": m.role, "content": m.content} for m in messages]}
+                    {
+                        "system_prompt": system_prompt,
+                        "messages": [
+                            {"role": m.role, "content": m.content}
+                            for m in messages
+                        ],
+                    }
                 )
-                result = original_complete(messages)
+                result = original_complete(system_prompt, messages)
                 span.set_outputs({"response": result})
             return result
 

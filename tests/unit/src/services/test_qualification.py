@@ -17,7 +17,7 @@ class StubLLM:
     def __init__(self, response: str) -> None:
         self._response = response
 
-    def complete(self, messages: list[Message]) -> str:
+    def complete(self, system_prompt: str, messages: list[Message]) -> str:
         return self._response
 
 

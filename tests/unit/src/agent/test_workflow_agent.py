@@ -8,7 +8,7 @@ from manager_ai.ports.qualification import QualificationDecision, ServiceQualifi
 
 
 class StubLLM:
-    def complete(self, messages: Any) -> str:
+    def complete(self, system_prompt: str, messages: Any) -> str:
         return "stub"
 
 

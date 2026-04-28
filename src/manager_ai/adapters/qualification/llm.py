@@ -36,7 +36,10 @@ class LLMQualificationAdapter(QualificationPort):
         job: JobState,
         message: ConversationMessage,
     ) -> ServiceQualification:
-        response = self._llm.complete(self._messages(thread, job, message)).strip()
+        response = self._llm.complete(
+            self._system_prompt(job),
+            self._messages(thread, message),
+        ).strip()
         try:
             parsed = _QualificationOutput.model_validate_json(response)
         except ValidationError:
@@ -50,41 +53,34 @@ class LLMQualificationAdapter(QualificationPort):
             reply=parsed.reply,
         )
 
+    def _system_prompt(self, job: JobState) -> str:
+        return (
+            "Sos el clasificador de calificacion de servicio de En Red Rosario. "
+            "En Red instala redes de seguridad para chicos y mascotas en balcones, techos, "
+            "terrazas y escaleras. Clasifica el ultimo mensaje del cliente como JSON estricto. "
+            "Usa decision='service' solo si el cliente busca o ya venia hablando de ese servicio. "
+            "Usa decision='not_service' solo si hay evidencia clara de que busca otro rubro, "
+            "por ejemplo red de pesca, futbol, volley o red LAN. "
+            "Usa decision='unclear' para saludos, chitchat, preguntas vagas o falta de informacion. "
+            "Nunca trates informacion faltante como motivo de descarte. "
+            "Si el trabajo actual ya tiene tipo de instalacion o intencion de servicio, mantenelo como service "
+            "aunque el ultimo mensaje sea casual. "
+            "Devolve exactamente este JSON: "
+            '{"decision":"service|not_service|unclear","reason":"...","reply":null}. '
+            "reply puede ser una respuesta breve en espanol rioplatense cuando decision sea unclear o not_service.\n\n"
+            f"Trabajo actual: estado={job.status.value}, "
+            f"service_intent={job.scope.service_intent}, "
+            f"installation_type={job.scope.installation_type}, "
+            f"area_context={job.scope.area_context}, "
+            f"missing_fields={', '.join(job.missing_fields) if job.missing_fields else 'ninguno'}."
+        )
+
     def _messages(
         self,
         thread: ContactThreadState,
-        job: JobState,
         message: ConversationMessage,
     ) -> list[Message]:
         return [
-            Message(
-                role="system",
-                content=(
-                    "Sos el clasificador de calificacion de servicio de En Red Rosario. "
-                    "En Red instala redes de seguridad para chicos y mascotas en balcones, techos, "
-                    "terrazas y escaleras. Clasifica el ultimo mensaje del cliente como JSON estricto. "
-                    "Usa decision='service' solo si el cliente busca o ya venia hablando de ese servicio. "
-                    "Usa decision='not_service' solo si hay evidencia clara de que busca otro rubro, "
-                    "por ejemplo red de pesca, futbol, volley o red LAN. "
-                    "Usa decision='unclear' para saludos, chitchat, preguntas vagas o falta de informacion. "
-                    "Nunca trates informacion faltante como motivo de descarte. "
-                    "Si el trabajo actual ya tiene tipo de instalacion o intencion de servicio, mantenelo como service "
-                    "aunque el ultimo mensaje sea casual. "
-                    "Devolve exactamente este JSON: "
-                    '{"decision":"service|not_service|unclear","reason":"...","reply":null}. '
-                    "reply puede ser una respuesta breve en espanol rioplatense cuando decision sea unclear o not_service."
-                ),
-            ),
-            Message(
-                role="system",
-                content=(
-                    f"Trabajo actual: estado={job.status.value}, "
-                    f"service_intent={job.scope.service_intent}, "
-                    f"installation_type={job.scope.installation_type}, "
-                    f"area_context={job.scope.area_context}, "
-                    f"missing_fields={', '.join(job.missing_fields) if job.missing_fields else 'ninguno'}."
-                ),
-            ),
             *_recent_history(thread, message),
             Message(role="user", content=message.content),
         ]

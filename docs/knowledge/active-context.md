@@ -26,6 +26,7 @@ This file is for the current working picture of the project.
 - How much of the older linear flow should stay documented versus being explicitly marked legacy.
 - Whether to add automation or scripts for day-wide work-log aggregation across multiple conversations.
 - Whether the next config slice should introduce named shared LLM profile maps or first move more effective config contracts close to their modules.
+- Whether to finish moving API-key environment lookup out of the remaining LLM-adjacent adapters after the first Claude adapter slice.
 
 ### Documentation gaps
 

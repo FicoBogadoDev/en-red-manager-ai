@@ -16,8 +16,8 @@ class StubLLM:
         self.response = response
         self.messages: list[Any] = []
 
-    def complete(self, messages: Any) -> str:
-        self.messages.append(messages)
+    def complete(self, system_prompt: str, messages: Any) -> str:
+        self.messages.append((system_prompt, messages))
         return self.response
 
 

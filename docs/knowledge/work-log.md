@@ -122,3 +122,26 @@ Keep entries practical:
 - Re-ran the config-loading tests and workflow-agent unit tests after the refactor and they passed.
 - Updated maintained docs to describe the new raw-versus-resolved flow and the current limitation that `shared_llm` only supports `shared = "llm"` in this first slice.
 - Follow-up: decide whether the next slice should introduce named shared LLM profile maps or move more effective config contracts out of `wiring/settings.py` first.
+
+## 2026-04-28
+
+### LLM port and Claude adapter cleanup
+
+- Fixed Anthropic SDK typing issues in `ClaudeAdapter` by converting only `user` and `assistant` turns into Anthropic `MessageParam` values and reading only text response blocks.
+- Moved Claude API key environment lookup out of `ClaudeAdapter`; TOML still stores `api_key_env`, but `wiring/llm.py` now resolves the environment value before constructing the adapter.
+- Changed `LLMPort.complete()` to take `system_prompt: str` separately from `messages: list[Message]`.
+- Updated Claude, PydanticAI, log, qualification, reply-generation, tracing, service call sites, and test fakes to follow the new LLM boundary.
+
+### Design decisions
+
+- System prompts are now invocation context rather than fake conversation messages.
+- The Anthropic message list is treated as conversation history only, which matches the SDK's typed API shape.
+- The API-key cleanup was intentionally applied only to `ClaudeAdapter` for this slice; other LLM-adjacent adapters still need the same boundary cleanup later.
+
+### Documentation and verification
+
+- Updated maintained implementation docs with the new LLM invocation boundary and Claude secret-resolution behavior.
+- Added an active-context follow-up to finish moving environment lookup out of the remaining LLM-adjacent adapters.
+- `uv run pytest tests\unit\src -q` passed with 29 passing tests and 2 skipped tests.
+- `uv run mypy src\manager_ai\adapters\llm\claude.py` passed.
+- Broader mypy remains noisy because of existing unrelated missing stubs/imports around `instructor`, `mlflow`, and pre-existing workflow typing issues.

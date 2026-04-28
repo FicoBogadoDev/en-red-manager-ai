@@ -118,12 +118,12 @@ def run_collection(
     Returns the updated state and the assistant reply.
     """
     updated_history = state.history + [Message(role="user", content=user_message)]
-    messages_for_llm = [Message(role="system", content=system_prompt)] + updated_history
 
     if extractor is not None:
+        messages_for_llm = [Message(role="system", content=system_prompt)] + updated_history
         reply, extracted_data = extractor.collect(messages_for_llm)
     else:
-        llm_response = llm.complete(messages_for_llm)
+        llm_response = llm.complete(system_prompt, updated_history)
         raw = extract_json_block(llm_response) or {}
         extracted_data = _dict_to_extracted(raw)
         reply = re.sub(r"```json.*?```", "", llm_response, flags=re.DOTALL).strip()

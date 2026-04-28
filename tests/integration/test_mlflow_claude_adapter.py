@@ -36,7 +36,7 @@ def main() -> None:
         raise EnvironmentError("ANTHROPIC_API_KEY environment variable is not set.")
 
     agent = Agent(
-        llm=ClaudeAdapter(model="claude-haiku-4-5-20251001", api_key_env="ANTHROPIC_API_KEY"),
+        llm=ClaudeAdapter(model="claude-haiku-4-5-20251001", api_key=api_key),
         messaging=LogMessagingAdapter(),
         storage=InMemoryStorageAdapter(),
     )

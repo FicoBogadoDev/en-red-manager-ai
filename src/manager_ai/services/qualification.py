@@ -20,8 +20,7 @@ def run_qualification(
     """
     updated_history = state.history + [Message(role="user", content=user_message)]
 
-    messages_for_llm = [Message(role="system", content=system_prompt)] + updated_history
-    llm_response = llm.complete(messages_for_llm)
+    llm_response = llm.complete(system_prompt, updated_history)
 
     qualified = is_qualified(llm_response)
     # Strip the trailing keyword before sending the reply to the client

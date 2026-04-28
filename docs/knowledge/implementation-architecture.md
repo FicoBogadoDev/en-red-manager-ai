@@ -155,6 +155,29 @@ The current builder surface supports:
 
 An older `extractor` path also still exists for Instructor-based extraction support.
 
+## LLM Invocation Boundary
+
+`src/manager_ai/ports/llm.py` defines the shared LLM generation boundary.
+
+The current contract is:
+
+- `system_prompt: str`
+  invocation-level instructions and contextual framing
+- `messages: list[Message]`
+  conversation turns only, normally `user` and `assistant`
+
+System prompts are intentionally not represented as fake conversation
+messages at this boundary. This matches provider APIs such as Anthropic, where
+the system prompt is a top-level request field and the message list is limited
+to conversational turns.
+
+`ClaudeAdapter` receives a resolved API key value directly. The TOML config
+still keeps only the environment variable name, and `src/manager_ai/wiring/llm.py`
+resolves that environment variable before constructing the adapter. This keeps
+secret lookup in the composition layer rather than inside the Claude adapter.
+The same cleanup has not yet been applied consistently to every LLM-adjacent
+adapter.
+
 There is also now a human-facing configuration reference in `docs/configuration.md` so valid TOML shapes are discoverable without reading the Python config models directly.
 
 The current wiring style still mixes two patterns:

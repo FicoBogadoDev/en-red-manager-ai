@@ -25,41 +25,33 @@ class LLMConversationReplyAdapter(ConversationReplyPort):
         route: str,
         fallback_text: str,
     ) -> str:
+        system_prompt = (
+            "Sos el asistente virtual de En Red Rosario. "
+            "Responde en espanol rioplatense, con tono humano, breve y claro para WhatsApp. "
+            "No inventes datos. Si faltan datos, pedi solo el proximo dato mas importante. "
+            "No menciones procesos internos, rutas, estados ni IDs. "
+            "Tu objetivo comercial es avanzar la conversacion sin abrumar.\n\n"
+            f"Intent detectado: {intent.value}\n"
+            f"Ruta seleccionada: {route}\n"
+            f"Trabajo actual: {job.title}\n"
+            f"Estado del trabajo: {job.status.value}\n"
+            f"Datos conocidos: nombre={job.contact_name}, direccion={job.scope.address}, ciudad={job.scope.city}, "
+            f"tipo={job.scope.installation_type}, areas={self._net_area_summary(job)}\n"
+            f"Campos faltantes: {', '.join(job.missing_fields) if job.missing_fields else 'ninguno'}\n"
+            f"Respuesta base sugerida: {fallback_text}"
+        )
         messages = [
-            Message(
-                role="system",
-                content=(
-                    "Sos el asistente virtual de En Red Rosario. "
-                    "Respondé en español rioplatense, con tono humano, breve y claro para WhatsApp. "
-                    "No inventes datos. Si faltan datos, pedí solo el próximo dato más importante. "
-                    "No menciones procesos internos, rutas, estados ni IDs. "
-                    "Tu objetivo comercial es avanzar la conversación sin abrumar."
-                ),
-            ),
-            Message(
-                role="system",
-                content=(
-                    f"Intent detectado: {intent.value}\n"
-                    f"Ruta seleccionada: {route}\n"
-                    f"Trabajo actual: {job.title}\n"
-                    f"Estado del trabajo: {job.status.value}\n"
-                    f"Datos conocidos: nombre={job.contact_name}, direccion={job.scope.address}, ciudad={job.scope.city}, "
-                    f"tipo={job.scope.installation_type}, areas={self._net_area_summary(job)}\n"
-                    f"Campos faltantes: {', '.join(job.missing_fields) if job.missing_fields else 'ninguno'}\n"
-                    f"Respuesta base sugerida: {fallback_text}"
-                ),
-            ),
             *_conversation_messages(thread),
             Message(
                 role="user",
                 content=(
-                    "Redactá la próxima respuesta al cliente. "
+                    "Redacta la proxima respuesta al cliente. "
                     "Mantenela en 1 o 2 frases cortas. "
-                    "Si la respuesta base ya es correcta, podés reformularla suavemente sin cambiar el objetivo."
+                    "Si la respuesta base ya es correcta, podes reformularla suavemente sin cambiar el objetivo."
                 ),
             ),
         ]
-        reply = self._llm.complete(messages).strip()
+        reply = self._llm.complete(system_prompt, messages).strip()
         return reply or fallback_text
 
     def _net_area_summary(self, job: JobState) -> str:

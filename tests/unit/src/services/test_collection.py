@@ -29,7 +29,7 @@ class StubLLM:
         self._response = response
         self.call_count = 0
 
-    def complete(self, messages: list[Message]) -> str:
+    def complete(self, system_prompt: str, messages: list[Message]) -> str:
         self.call_count += 1
         return self._response
 
