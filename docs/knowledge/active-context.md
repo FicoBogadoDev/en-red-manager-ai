@@ -19,6 +19,7 @@ This file is for the current working picture of the project.
 - Keep the behavior/implementation split clean as the knowledge base grows.
 - Keep the new wiring split and configuration reference in sync as runtime options change.
 - Keep the raw-versus-resolved config split clear as more subsystems move out of the old central settings module.
+- Keep the text-generation LLM boundary centralized in `adapters/llm/text_generation/wiring.py` as provider options change.
 
 ### Open questions
 
@@ -26,7 +27,7 @@ This file is for the current working picture of the project.
 - How much of the older linear flow should stay documented versus being explicitly marked legacy.
 - Whether to add automation or scripts for day-wide work-log aggregation across multiple conversations.
 - Whether the next config slice should introduce named shared LLM profile maps or first move more effective config contracts close to their modules.
-- Whether to finish moving API-key environment lookup out of the remaining LLM-adjacent adapters after the first Claude adapter slice.
+- Whether to finish moving API-key environment lookup out of the remaining non-text-generation LLM-adjacent adapters after the Claude text-generation slice.
 
 ### Documentation gaps
 

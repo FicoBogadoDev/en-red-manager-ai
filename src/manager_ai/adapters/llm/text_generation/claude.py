@@ -1,14 +1,28 @@
-from collections.abc import Sequence
+from typing import Protocol
 
-import anthropic
-from anthropic.types import MessageParam, TextBlock
+from anthropic.types import ContentBlock, Message as ClaudeMessage, MessageParam, TextBlock
 
 from manager_ai.models.conversation import Message
 
 
+class ClaudeMessagesClient(Protocol):
+    def create(
+        self,
+        *,
+        model: str,
+        max_tokens: int,
+        system: str,
+        messages: list[MessageParam],
+    ) -> ClaudeMessage: ...
+
+
+class ClaudeClient(Protocol):
+    messages: ClaudeMessagesClient
+
+
 class ClaudeAdapter:
-    def __init__(self, model: str, api_key: str) -> None:
-        self._client = anthropic.Anthropic(api_key=api_key)
+    def __init__(self, model: str, client: ClaudeClient) -> None:
+        self._client = client
         self._model = model
 
     def complete(self, system_prompt: str, messages: list[Message]) -> str:
@@ -33,5 +47,5 @@ def _to_anthropic_messages(messages: list[Message]) -> list[MessageParam]:
     return anthropic_messages
 
 
-def _response_text(content: Sequence[object]) -> str:
+def _response_text(content: list[ContentBlock]) -> str:
     return "".join(block.text for block in content if isinstance(block, TextBlock))

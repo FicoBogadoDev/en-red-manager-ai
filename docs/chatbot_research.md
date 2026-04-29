@@ -325,7 +325,7 @@ This section maps research findings to the current manager-ai codebase, identify
 ### 6.1 What the Current Architecture Does Well
 
 - **Hybrid state machine:** The `ConversationStage` enum (`QUALIFYING → COLLECTING → HANDOFF_PENDING → DONE`) is the correct architectural pattern. The explicit state machine prevents the LLM from skipping stages or hallucinating completion.
-- **Port/adapter pattern:** `LLMPort`, `MessagingPort`, and `StoragePort` as `typing.Protocol` interfaces make the system testable and DI-wired. This directly enables the "fake over mock" testing approach the literature recommends.
+- **Port/adapter pattern:** `LLMTextGenerationPort`, `MessagingPort`, and `StoragePort` as `typing.Protocol` interfaces make the system testable and DI-wired. This directly enables the "fake over mock" testing approach the literature recommends.
 - **Pydantic models:** `ClientChart`, `InstallationType`, `Address`, and `Dimensions` are well-typed structured representations—exactly what the Instructor/Pydantic pattern calls for.
 - **Spanish-language prompts:** The system is built natively in Argentine Spanish, which is essential for WhatsApp engagement quality.
 

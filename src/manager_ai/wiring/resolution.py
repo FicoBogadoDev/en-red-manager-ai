@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from manager_ai.adapters.llm.text_generation.config import LLMConfig
+from manager_ai.adapters.llm.text_generation.wiring import TextGenerationLLMConfig
 from manager_ai.adapters.qualification.config import (
     HeuristicQualificationConfig,
     LLMQualificationConfig,
@@ -26,7 +26,7 @@ from manager_ai.wiring.resolved_app_config import ResolvedAppConfig
 
 def resolve_reply_generation_config(
     cfg: RawReplyGenerationConfig,
-    app_llm: LLMConfig,
+    app_llm: TextGenerationLLMConfig,
 ) -> ReplyGenerationConfig:
     if isinstance(cfg, RawRulesReplyGenerationConfig):
         return RulesReplyGenerationConfig(type="rules")
@@ -42,7 +42,7 @@ def resolve_reply_generation_config(
 
 def resolve_qualification_config(
     cfg: RawQualificationConfig,
-    app_llm: LLMConfig,
+    app_llm: TextGenerationLLMConfig,
 ) -> QualificationConfig:
     if isinstance(cfg, HeuristicQualificationConfig):
         return HeuristicQualificationConfig(type="heuristic")

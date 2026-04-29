@@ -10,7 +10,7 @@ from manager_ai.agent.prompts import (
 )
 from manager_ai.models.client import ClientChart
 from manager_ai.models.conversation import ConversationStage, ConversationState
-from manager_ai.ports.llm import LLMPort
+from manager_ai.adapters.llm.text_generation.wiring import LLMTextGenerationPort
 from manager_ai.ports.messaging import MessagingPort
 from manager_ai.ports.storage import StoragePort
 from manager_ai.services import collection, handoff, qualification
@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 class Agent:
     def __init__(
         self,
-        llm: LLMPort,
+        llm: LLMTextGenerationPort,
         messaging: MessagingPort,
         storage: StoragePort,
         extractor: "ExtractorPort | None" = None,

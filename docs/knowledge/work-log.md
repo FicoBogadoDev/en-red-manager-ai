@@ -129,7 +129,7 @@ Keep entries practical:
 
 - Fixed Anthropic SDK typing issues in `ClaudeAdapter` by converting only `user` and `assistant` turns into Anthropic `MessageParam` values and reading only text response blocks.
 - Moved Claude API key environment lookup out of `ClaudeAdapter`; TOML still stores `api_key_env`, but `wiring/llm.py` now resolves the environment value before constructing the adapter.
-- Changed `LLMPort.complete()` to take `system_prompt: str` separately from `messages: list[Message]`.
+- Changed `LLMTextGenerationPort.complete()` to take `system_prompt: str` separately from `messages: list[Message]`.
 - Updated Claude, log, qualification, reply-generation, tracing, service call sites, and test fakes to follow the new LLM boundary.
 
 ### Design decisions
@@ -145,3 +145,24 @@ Keep entries practical:
 - `uv run pytest tests\unit\src -q` passed with 29 passing tests and 2 skipped tests.
 - `uv run mypy src\manager_ai\adapters\llm\claude.py` passed.
 - Broader mypy remains noisy because of existing unrelated missing stubs/imports around `instructor`, `mlflow`, and pre-existing workflow typing issues.
+
+## 2026-04-29
+
+### Text-generation LLM wiring consolidation
+
+- Removed the unused PydanticAI text-generation adapter and switched the runnable/reference LLM config examples to the existing Claude adapter.
+- Consolidated the text-generation LLM port, config variants, and builder into `src/manager_ai/adapters/llm/text_generation/wiring.py`.
+- Renamed the text-generation protocol to `LLMTextGenerationPort` so it is distinct from structured-output LLM use cases.
+- Updated agent, service, qualification, reply-generation, wiring, and config imports to use the new text-generation wiring module.
+
+### Claude adapter dependency cleanup and tests
+
+- Changed `ClaudeAdapter` to receive an explicit Anthropic-compatible client dependency instead of constructing one from an API key internally.
+- Moved Anthropic client construction and API-key environment resolution into the text-generation wiring module.
+- Added a focused unit test for `ClaudeAdapter` using a fake client that verifies Anthropic request shape and text-block-only response handling.
+- Tightened Claude adapter typing to use Anthropic SDK response/content block types instead of broad object-shaped response protocols.
+
+### Verification
+
+- `uv run pytest tests/unit/src -q` passed with 30 passing tests and 2 skipped tests.
+- Targeted mypy checks for the Claude adapter, text-generation wiring, and Claude adapter test passed.

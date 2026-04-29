@@ -4,7 +4,7 @@ from typing import Annotated, Literal, Union
 
 from pydantic import BaseModel, Field
 
-from manager_ai.adapters.llm.text_generation.config import LLMConfig
+from manager_ai.adapters.llm.text_generation.wiring import TextGenerationLLMConfig
 from manager_ai.adapters.qualification.config import HeuristicQualificationConfig
 from manager_ai.wiring.settings import (
     ExtractorConfig,
@@ -26,7 +26,7 @@ class RawRulesReplyGenerationConfig(BaseModel):
 
 class RawLLMReplyGenerationConfig(BaseModel):
     type: Literal["llm"]
-    llm: LLMConfig
+    llm: TextGenerationLLMConfig
 
 
 class RawSharedLLMReplyGenerationConfig(BaseModel):
@@ -46,7 +46,7 @@ RawReplyGenerationConfig = Annotated[
 
 class RawLLMQualificationConfig(BaseModel):
     type: Literal["llm"]
-    llm: LLMConfig
+    llm: TextGenerationLLMConfig
 
 
 class RawSharedLLMQualificationConfig(BaseModel):
@@ -65,7 +65,7 @@ RawQualificationConfig = Annotated[
 
 
 class RawAppConfig(BaseModel):
-    llm: LLMConfig
+    llm: TextGenerationLLMConfig
     messaging: MessagingConfig
     storage: StorageConfig
     extractor: ExtractorConfig = RegexExtractorConfig(type="regex")

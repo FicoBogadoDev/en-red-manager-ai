@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from manager_ai.models.conversation import ContactThreadState, IntentType, JobState, Message
 from manager_ai.ports.conversation_reply import ConversationReplyPort
-from manager_ai.ports.llm import LLMPort
+from manager_ai.adapters.llm.text_generation.wiring import LLMTextGenerationPort
 
 
 def _conversation_messages(thread: ContactThreadState) -> list[Message]:
@@ -14,7 +14,7 @@ def _conversation_messages(thread: ContactThreadState) -> list[Message]:
 
 
 class LLMConversationReplyAdapter(ConversationReplyPort):
-    def __init__(self, llm: LLMPort) -> None:
+    def __init__(self, llm: LLMTextGenerationPort) -> None:
         self._llm = llm
 
     def draft_reply(

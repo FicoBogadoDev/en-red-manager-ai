@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from manager_ai.models.client import Address, ClientChart, InstallationType, NetArea
 from manager_ai.models.conversation import ConversationStage, ConversationState, Message
 from manager_ai.models.extraction import ExtractedClientData
-from manager_ai.ports.llm import LLMPort
+from manager_ai.adapters.llm.text_generation.wiring import LLMTextGenerationPort
 
 if TYPE_CHECKING:
     from manager_ai.ports.extractor import ExtractorPort
@@ -108,7 +108,7 @@ def _dict_to_extracted(raw: dict) -> "ExtractedClientData":
 def run_collection(
     state: ConversationState,
     user_message: str,
-    llm: LLMPort,
+    llm: LLMTextGenerationPort,
     system_prompt: str,
     extractor: "ExtractorPort | None" = None,
 ) -> tuple[ConversationState, str]:

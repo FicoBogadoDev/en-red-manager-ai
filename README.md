@@ -43,7 +43,7 @@ The system follows a **hexagonal (ports & adapters)** architecture. The core bus
 │  └─────────────┘  └──────────────┘  └─────────────────┘  │
 └──────┬──────────────────┬──────────────────┬─────────────┘
        │                  │                  │
-  LLMPort           StoragePort        MessagingPort
+  LLMTextGenerationPort StoragePort        MessagingPort
   (Protocol)         (Protocol)         (Protocol)
        │                  │                  │
   ClaudeAdapter    JsonFileAdapter     LogAdapter
@@ -72,7 +72,7 @@ manager-ai/
 │   │   └── conversation.py  # ConversationState, ConversationStage, Message
 │   │
 │   ├── ports/
-│   │   ├── llm.py           # LLMPort interface
+│   │   ├── llm.py           # Shared LLM-related interfaces
 │   │   ├── messaging.py     # MessagingPort interface
 │   │   └── storage.py       # StoragePort interface
 │   │
@@ -459,7 +459,7 @@ All three ports are `typing.Protocol` classes — no inheritance required.
 
 | Port | Method | Purpose |
 |------|--------|---------|
-| `LLMPort` | `complete(messages) -> str` | Send a message list, receive a string response |
+| `LLMTextGenerationPort` | `complete(system_prompt, messages) -> str` | Send a system prompt and message list, receive a string response |
 | `MessagingPort` | `send(to, text) -> None` | Deliver a message to a phone number |
 | `StoragePort` | `load(phone) -> ConversationState \| None` | Retrieve persisted state |
 | | `save(phone, state) -> None` | Persist updated state |
@@ -667,7 +667,7 @@ rm data/conversations/+5493411234567.json
 |-----------|---------|--------|
 | Messaging | `LogMessagingAdapter` (stdout) | `WhatsAppAdapter` (Meta Cloud API) |
 | Storage | `JsonFileStorageAdapter` | `PostgresStorageAdapter` |
-| LLM | `ClaudeAdapter` | Any provider implementing `LLMPort` |
+| LLM | `ClaudeAdapter` | Any provider implementing `LLMTextGenerationPort` |
 | Handoff | Send closing message only | Notify CRM / human team via webhook |
 | Validation | Dimension range check | NLP address validation, duplicate detection |
 # Current README

@@ -1,5 +1,5 @@
 from manager_ai.models.conversation import ConversationStage, ConversationState, Message
-from manager_ai.ports.llm import LLMPort
+from manager_ai.adapters.llm.text_generation.wiring import LLMTextGenerationPort
 
 
 def is_qualified(llm_response: str) -> bool:
@@ -10,7 +10,7 @@ def is_qualified(llm_response: str) -> bool:
 def run_qualification(
     state: ConversationState,
     user_message: str,
-    llm: LLMPort,
+    llm: LLMTextGenerationPort,
     system_prompt: str,
 ) -> tuple[ConversationState, str]:
     """

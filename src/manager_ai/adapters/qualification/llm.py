@@ -3,7 +3,7 @@ from __future__ import annotations
 from pydantic import BaseModel, ValidationError
 
 from manager_ai.models.conversation import ContactThreadState, ConversationMessage, JobState, Message
-from manager_ai.ports.llm import LLMPort
+from manager_ai.adapters.llm.text_generation.wiring import LLMTextGenerationPort
 from manager_ai.ports.qualification import (
     QualificationDecision,
     QualificationPort,
@@ -27,7 +27,7 @@ def _recent_history(thread: ContactThreadState, latest_message: ConversationMess
 
 
 class LLMQualificationAdapter(QualificationPort):
-    def __init__(self, llm: LLMPort) -> None:
+    def __init__(self, llm: LLMTextGenerationPort) -> None:
         self._llm = llm
 
     def qualify(

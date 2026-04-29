@@ -4,7 +4,7 @@ from typing import Annotated, Literal, Union
 
 from pydantic import BaseModel, Field
 
-from manager_ai.adapters.llm.text_generation.config import LLMConfig
+from manager_ai.adapters.llm.text_generation.wiring import TextGenerationLLMConfig
 
 
 class HeuristicQualificationConfig(BaseModel):
@@ -13,7 +13,7 @@ class HeuristicQualificationConfig(BaseModel):
 
 class LLMQualificationConfig(BaseModel):
     type: Literal["llm"]
-    llm: LLMConfig
+    llm: TextGenerationLLMConfig
 
 
 QualificationConfig = Annotated[

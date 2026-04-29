@@ -1,8 +1,9 @@
 from manager_ai.wiring.app import build_agent
-from manager_ai.adapters.llm.text_generation.config import (
+from manager_ai.adapters.llm.text_generation.wiring import (
     ClaudeLLMConfig,
-    LLMConfig,
+    TextGenerationLLMConfig,
     LogLLMConfig,
+    LLMTextGenerationPort,
 )
 from manager_ai.adapters.reply_generation.config import (
     LLMReplyGenerationConfig,
@@ -51,11 +52,12 @@ __all__ = [
     "HeuristicQualificationConfig",
     "HeuristicStructuredExtractionConfig",
     "InstructorExtractorConfig",
-    "LLMConfig",
+    "TextGenerationLLMConfig",
     "LLMMessageClassifierConfig",
     "LLMQualificationConfig",
     "LLMReplyGenerationConfig",
     "LLMStructuredExtractionConfigModel",
+    "LLMTextGenerationPort",
     "LogLLMConfig",
     "LogMessagingConfig",
     "MemoryStorageConfig",

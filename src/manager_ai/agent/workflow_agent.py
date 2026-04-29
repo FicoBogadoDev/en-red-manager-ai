@@ -30,7 +30,7 @@ from manager_ai.models.conversation import (
 )
 from manager_ai.ports.conversation_repository import ConversationRepositoryPort
 from manager_ai.ports.conversation_reply import ConversationReplyPort
-from manager_ai.ports.llm import LLMPort
+from manager_ai.adapters.llm.text_generation.wiring import LLMTextGenerationPort
 from manager_ai.ports.message_classifier import MessageClassifierPort
 from manager_ai.ports.messaging import MessagingPort
 from manager_ai.ports.qualification import QualificationDecision, QualificationPort
@@ -58,7 +58,7 @@ SERVICE_CLARIFICATION_MESSAGE = (
 class Agent:
     def __init__(
         self,
-        llm: LLMPort,
+        llm: LLMTextGenerationPort,
         messaging: MessagingPort,
         storage: ConversationRepositoryPort,
         extractor: "ExtractorPort | None" = None,

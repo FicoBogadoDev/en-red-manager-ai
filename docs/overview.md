@@ -18,7 +18,8 @@ The agent communicates in **Spanish (Argentine register)**.
 src/manager_ai/
   agent/          — orchestrates the conversation loop
   models/         — Pydantic models (ClientChart, ConversationState, …)
-  ports/          — typing.Protocol interfaces (LLMPort, MessagingPort, StoragePort)
+  ports/          — shared typing.Protocol interfaces (MessagingPort, StoragePort, etc.)
+  adapters/llm/text_generation/wiring.py — text-generation LLM protocol, config, and builder
   adapters/       — concrete implementations (Claude, log stubs, JSON file, in-memory)
   services/       — pure business logic (qualification, collection, handoff)
   config.py       — TOML-driven dependency wiring

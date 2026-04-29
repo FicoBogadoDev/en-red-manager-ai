@@ -16,6 +16,7 @@ Then inspect results in the MLflow UI:
 
 import os
 
+import anthropic
 from dotenv import load_dotenv
 
 from manager_ai.adapters.llm.text_generation.claude import ClaudeAdapter
@@ -36,7 +37,10 @@ def main() -> None:
         raise EnvironmentError("ANTHROPIC_API_KEY environment variable is not set.")
 
     agent = Agent(
-        llm=ClaudeAdapter(model="claude-haiku-4-5-20251001", api_key=api_key),
+        llm=ClaudeAdapter(
+            model="claude-haiku-4-5-20251001",
+            client=anthropic.Anthropic(api_key=api_key),
+        ),
         messaging=LogMessagingAdapter(),
         storage=InMemoryStorageAdapter(),
     )
