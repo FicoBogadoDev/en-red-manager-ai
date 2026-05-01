@@ -4,6 +4,7 @@ from manager_ai.adapters.llm.text_generation.wiring import (
     TextGenerationLLMConfig,
     LogLLMConfig,
     LLMTextGenerationPort,
+    OllamaLLMConfig,
 )
 from manager_ai.adapters.reply_generation.config import (
     LLMReplyGenerationConfig,
@@ -65,6 +66,7 @@ __all__ = [
     "MessagingConfig",
     "MLFlowTrackingConfig",
     "NoTrackingConfig",
+    "OllamaLLMConfig",
     "RawAppConfig",
     "RawLLMQualificationConfig",
     "RawLLMReplyGenerationConfig",

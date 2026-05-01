@@ -32,23 +32,47 @@ class LogLLMConfig(BaseModel):
     type: Literal["log"]
 
 
+class OllamaLLMConfig(BaseModel):
+    type: Literal["ollama"]
+    model: str
+    base_url: str = "http://localhost:11434"
+    timeout_seconds: float = Field(default=60.0, gt=0)
+
+
 TextGenerationLLMConfig = Annotated[
-    Union[ClaudeLLMConfig, LogLLMConfig],
+    Union[ClaudeLLMConfig, LogLLMConfig, OllamaLLMConfig],
     Field(discriminator="type"),
 ]
 
 
 def build_llm(cfg: TextGenerationLLMConfig) -> LLMTextGenerationPort:
-    if isinstance(cfg, ClaudeLLMConfig):
-        import anthropic
+    match cfg:
+        case ClaudeLLMConfig():
+            import anthropic
 
-        from manager_ai.adapters.llm.text_generation.claude import ClaudeAdapter, ClaudeClient
+            from manager_ai.adapters.llm.text_generation.claude import (
+                ClaudeAdapter,
+                ClaudeClient,
+            )
 
-        client = anthropic.Anthropic(api_key=_required_env(cfg.api_key_env))
-        return ClaudeAdapter(model=cfg.model, client=cast(ClaudeClient, client))
-    from manager_ai.adapters.llm.text_generation.log import LogLLMAdapter
+            client = anthropic.Anthropic(api_key=_required_env(cfg.api_key_env))
+            return ClaudeAdapter(model=cfg.model, client=cast(ClaudeClient, client))
+        case OllamaLLMConfig():
+            from manager_ai.adapters.llm.text_generation.ollama import (
+                OllamaAdapter,
+                UrllibOllamaHTTPClient,
+            )
 
-    return LogLLMAdapter()
+            return OllamaAdapter(
+                model=cfg.model,
+                client=UrllibOllamaHTTPClient(),
+                base_url=cfg.base_url,
+                timeout_seconds=cfg.timeout_seconds,
+            )
+        case LogLLMConfig():
+            from manager_ai.adapters.llm.text_generation.log import LogLLMAdapter
+
+            return LogLLMAdapter()
 
 
 def _required_env(name: str) -> str:

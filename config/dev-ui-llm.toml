@@ -1,7 +1,8 @@
 [llm]
-	type = "claude"
-	model = "claude-sonnet-4-6"
-	api_key_env = "ANTHROPIC_API_KEY"
+	type = "ollama"
+	model = "llama3.2"
+	base_url = "http://localhost:11434"
+	timeout_seconds = 60
 
 
 [messaging]
@@ -14,15 +15,11 @@
 
 
 [message_classifier]
-	type = "llm"
-	model = "claude-sonnet-4-6"
-	api_key_env = "ANTHROPIC_API_KEY"
+	type = "heuristic"
 
 
 [structured_extraction]
-	type = "llm"
-	model = "claude-sonnet-4-6"
-	api_key_env = "ANTHROPIC_API_KEY"
+	type = "heuristic"
 
 
 [reply_generation]

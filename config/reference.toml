@@ -7,6 +7,11 @@
 	api_key_env = "ANTHROPIC_API_KEY"
 
 # [llm]
+# 	type = "ollama"
+# 	model = "llama3.1"
+# 	base_url = "http://localhost:11434"
+
+# [llm]
 # 	type = "log"
 
 
@@ -74,6 +79,11 @@
 
 # [reply_generation]
 # 	type = "llm"
+
+# [reply_generation.llm]
+# 	type = "ollama"
+# 	model = "llama3.1"
+# 	base_url = "http://localhost:11434"
 
 # [reply_generation.llm]
 # 	type = "claude"

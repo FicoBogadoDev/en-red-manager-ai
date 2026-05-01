@@ -32,12 +32,13 @@ def test_dev_ui_config_parses() -> None:
     raw_config = load_raw_app_config(config_path)
     config = load_app_config(config_path)
 
-    assert config.message_classifier.type == "llm"
-    assert config.structured_extraction.type == "llm"
+    assert config.llm.type == "ollama"
+    assert config.message_classifier.type == "heuristic"
+    assert config.structured_extraction.type == "heuristic"
     assert raw_config.reply_generation.type == "shared_llm"
     assert raw_config.reply_generation.shared == "llm"
     assert config.reply_generation.type == "llm"
-    assert config.reply_generation.llm.type == "claude"
+    assert config.reply_generation.llm.type == "ollama"
     assert config.qualification.type == "heuristic"
 
 
@@ -105,6 +106,16 @@ def test_qualification_can_use_shared_llm(tmp_path: Path) -> None:
     assert config.qualification.type == "llm"
     assert config.qualification.llm.type == "log"
     assert agent is not None
+
+
+def test_ollama_llm_config_parses() -> None:
+    config_path = PROJECT_ROOT / "config" / "dev-ui-llm.toml"
+
+    config = load_app_config(config_path)
+
+    assert config.llm.type == "ollama"
+    assert config.llm.model == "llama3.2"
+    assert config.llm.base_url == "http://localhost:11434"
 
 
 def test_qualification_can_use_local_child_llm(tmp_path: Path) -> None:
