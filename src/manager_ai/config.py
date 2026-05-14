@@ -11,7 +11,7 @@ from manager_ai.adapters.reply_generation.config import (
     ReplyGenerationConfig,
     RulesReplyGenerationConfig,
 )
-from manager_ai.adapters.qualification.config import (
+from manager_ai.adapters.qualification.wiring import (
     HeuristicQualificationConfig,
     LLMQualificationConfig,
     QualificationConfig,

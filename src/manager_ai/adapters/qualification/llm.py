@@ -26,7 +26,7 @@ def _recent_history(thread: ContactThreadState, latest_message: ConversationMess
     return messages
 
 
-class LLMQualificationAdapter(QualificationPort):
+class LLMQualificationAdapter:
     def __init__(self, llm: LLMTextGenerationPort) -> None:
         self._llm = llm
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from manager_ai.adapters.llm.text_generation.wiring import TextGenerationLLMConfig
-from manager_ai.adapters.qualification.config import (
+from manager_ai.adapters.qualification.wiring import (
     HeuristicQualificationConfig,
     LLMQualificationConfig,
     QualificationConfig,

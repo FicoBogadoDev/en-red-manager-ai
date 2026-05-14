@@ -4,13 +4,9 @@ from manager_ai.adapters.reply_generation.config import (
     LLMReplyGenerationConfig,
     ReplyGenerationConfig,
 )
-from manager_ai.adapters.qualification.config import (
-    LLMQualificationConfig,
-    QualificationConfig,
-)
+from manager_ai.adapters.qualification.wiring import build_qualification
 from manager_ai.ports.conversation_reply import ConversationReplyPort
 from manager_ai.ports.message_classifier import MessageClassifierPort
-from manager_ai.ports.qualification import QualificationPort
 from manager_ai.ports.structured_extraction import StructuredExtractionPort
 from manager_ai.adapters.llm.text_generation.wiring import build_llm
 from manager_ai.wiring.settings import (
@@ -58,16 +54,6 @@ def build_structured_extraction(
     )
 
     return HeuristicStructuredExtractionAdapter()
-
-
-def build_qualification(cfg: QualificationConfig) -> QualificationPort:
-    if isinstance(cfg, LLMQualificationConfig):
-        from manager_ai.adapters.qualification.llm import LLMQualificationAdapter
-
-        return LLMQualificationAdapter(llm=build_llm(cfg.llm))
-    from manager_ai.adapters.qualification.heuristic import HeuristicQualificationAdapter
-
-    return HeuristicQualificationAdapter()
 
 
 def build_reply_generation(

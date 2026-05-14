@@ -36,7 +36,7 @@ def _normalized_text(text: str) -> str:
     return ascii_text.lower()
 
 
-class HeuristicQualificationAdapter(QualificationPort):
+class HeuristicQualificationAdapter:
     def qualify(
         self,
         thread: ContactThreadState,

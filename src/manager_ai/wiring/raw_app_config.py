@@ -5,7 +5,7 @@ from typing import Annotated, Literal, Union
 from pydantic import BaseModel, Field
 
 from manager_ai.adapters.llm.text_generation.wiring import TextGenerationLLMConfig
-from manager_ai.adapters.qualification.config import HeuristicQualificationConfig
+from manager_ai.adapters.qualification.wiring import HeuristicQualificationConfig
 from manager_ai.wiring.settings import (
     ExtractorConfig,
     HeuristicMessageClassifierConfig,

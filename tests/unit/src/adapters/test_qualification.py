@@ -1,5 +1,11 @@
 from typing import Any
 
+from manager_ai.adapters.llm.text_generation.wiring import LogLLMConfig
+from manager_ai.adapters.qualification.wiring import (
+    HeuristicQualificationConfig,
+    LLMQualificationConfig,
+    build_qualification,
+)
 from manager_ai.adapters.qualification.heuristic import HeuristicQualificationAdapter
 from manager_ai.adapters.qualification.llm import LLMQualificationAdapter
 from manager_ai.models.conversation import (
@@ -90,3 +96,17 @@ def test_llm_qualification_invalid_json_falls_back_to_unclear() -> None:
     )
 
     assert result.decision == QualificationDecision.UNCLEAR
+
+
+def test_build_qualification_constructs_heuristic_adapter() -> None:
+    adapter = build_qualification(HeuristicQualificationConfig(type="heuristic"))
+
+    assert isinstance(adapter, HeuristicQualificationAdapter)
+
+
+def test_build_qualification_constructs_llm_adapter() -> None:
+    adapter = build_qualification(
+        LLMQualificationConfig(type="llm", llm=LogLLMConfig(type="log"))
+    )
+
+    assert isinstance(adapter, LLMQualificationAdapter)
