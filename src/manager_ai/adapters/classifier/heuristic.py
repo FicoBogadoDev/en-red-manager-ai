@@ -46,6 +46,11 @@ class HeuristicMessageClassifier(MessageClassifierPort):
             return IntentType.POST_INSTALL
         if _contains_any(text, ("foto", "medida", "mide", "adjunto", "te mando", "te paso")) or message.attachments:
             return IntentType.PROVIDE_EVIDENCE
+        if _contains_any(
+            text,
+            ("baranda", "barandas", "mosquitero", "mosquiteros", "cerramiento", "pintura"),
+        ):
+            return IntentType.UNKNOWN
         if _contains_any(text, ("otro balcon", "otro balcón", "además", "ademas", "también", "tambien", "otra direccion", "otra dirección", "otro depto")):
             return IntentType.NEW_INQUIRY
         if _contains_any(text, ("hola", "buenas", "consulta", "necesito", "quiero", "red", "balcon", "balcón", "terraza", "techo", "escalera")):

@@ -178,15 +178,17 @@ Allowed `type` values:
 - `llm`
 
 Fields by type:
-- `heuristic`: no extra fields
-- `shared_llm`: `shared`
-- `llm`: nested child section `[qualification.llm]` using the normal `LLMConfig` shape
+- `heuristic`: optional `catalog_path`
+- `shared_llm`: `shared`, optional `catalog_path`
+- `llm`: optional `catalog_path`, plus nested child section `[qualification.llm]` using the normal `LLMConfig` shape
 
 Default:
 - omitted sections default to `heuristic`
+- omitted `catalog_path` defaults to `config/service-catalog.md`
 
 Design note:
 - qualification returns one of `service`, `not_service`, or `unclear`
+- qualification uses the Markdown service catalog to classify offered, adjacent unsupported, clearly unsupported, and ambiguous service items
 - `unclear` keeps the job open and asks for clarification
 - raw `shared_llm` explicitly references shared config, currently only `shared = "llm"`
 - raw `llm` owns a local child LLM config under `[qualification.llm]`

@@ -49,8 +49,11 @@ Current operational meaning:
 - requests outside En Red's service are disqualified
 - unclear first messages or casual chat are not treated as disqualification evidence
 - when service fit is unclear, the chatbot should ask a short clarifying question
+- when a message mixes an in-scope safety-net job with an unsupported extra, the chatbot should keep the supported job alive, briefly decline only the unsupported extra, and continue with the next useful question
 - the thread remains visible rather than deleted
 - the customer still gets a reply instead of silent failure
+
+The service boundary should be maintained in the human-editable service catalog rather than buried in prompts or code. That catalog should stay readable for company-side edits: offered services, adjacent unsupported services, clearly out-of-scope requests, and ambiguous cases that should trigger clarification.
 
 ### 2. Scope and evidence intake
 

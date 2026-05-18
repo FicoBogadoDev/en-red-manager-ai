@@ -200,6 +200,46 @@ def test_non_service_request_is_disqualified() -> None:
     assert disqualify_event.payload["route"] == "disqualify"
 
 
+def test_mixed_supported_and_unsupported_request_preserves_job() -> None:
+    agent, storage, messaging = build_agent()
+    phone = "+5493410000014"
+
+    agent.handle_message(phone, "Hola, necesito red para balcon y tambien un mosquitero")
+
+    thread = storage.load_thread(phone)
+    assert thread is not None
+    job = thread.get_job(thread.active_job_id)
+    assert job is not None
+    assert job.status == JobStatus.AWAITING_EVIDENCE
+    assert job.scope.installation_type == "balcony"
+    assert "No instalamos mosquiteros" in messaging.sent[-1][1]
+    assert "nombre" in messaging.sent[-1][1]
+    event = next(
+        event
+        for event in thread.events
+        if event.kind == "unsupported_service_extra_detected"
+    )
+    assert event.payload["unsupported_items"]
+
+
+def test_unsupported_extra_during_active_job_keeps_collecting() -> None:
+    agent, storage, messaging = build_agent()
+    phone = "+5493410000015"
+
+    agent.handle_message(phone, "Hola, necesito red para balcon en Rosario")
+    agent.handle_message(phone, "Tambien arreglan barandas?")
+
+    thread = storage.load_thread(phone)
+    assert thread is not None
+    assert len(thread.jobs) == 1
+    job = thread.get_job(thread.active_job_id)
+    assert job is not None
+    assert job.status != JobStatus.DISQUALIFIED
+    assert job.scope.installation_type == "balcony"
+    assert "No hacemos arreglos de barandas" in messaging.sent[-1][1]
+    assert "nombre" in messaging.sent[-1][1]
+
+
 def test_greeting_first_message_asks_for_clarification_without_disqualifying() -> None:
     agent, storage, messaging = build_agent()
     phone = "+5493410000009"

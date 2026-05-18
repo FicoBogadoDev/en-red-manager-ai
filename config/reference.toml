@@ -47,13 +47,16 @@
 
 [qualification]
 	type = "heuristic"
+	catalog_path = "config/service-catalog.md"
 
 # [qualification]
 # 	type = "shared_llm"
 # 	shared = "llm"
+# 	catalog_path = "config/service-catalog.md"
 
 # [qualification]
 # 	type = "llm"
+# 	catalog_path = "config/service-catalog.md"
 
 # [qualification.llm]
 # 	type = "claude"

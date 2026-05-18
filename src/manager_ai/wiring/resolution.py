@@ -45,15 +45,26 @@ def resolve_qualification_config(
     app_llm: TextGenerationLLMConfig,
 ) -> QualificationConfig:
     if isinstance(cfg, HeuristicQualificationConfig):
-        return HeuristicQualificationConfig(type="heuristic")
+        return HeuristicQualificationConfig(
+            type="heuristic",
+            catalog_path=cfg.catalog_path,
+        )
     if isinstance(cfg, RawLLMQualificationConfig):
-        return LLMQualificationConfig(type="llm", llm=cfg.llm)
+        return LLMQualificationConfig(
+            type="llm",
+            llm=cfg.llm,
+            catalog_path=cfg.catalog_path,
+        )
     if cfg.shared != "llm":
         raise ValueError(
             f"Unsupported shared LLM reference '{cfg.shared}'. "
             "Qualification only supports 'shared = \"llm\"'."
         )
-    return LLMQualificationConfig(type="llm", llm=app_llm)
+    return LLMQualificationConfig(
+        type="llm",
+        llm=app_llm,
+        catalog_path=cfg.catalog_path,
+    )
 
 
 def resolve_app_config(raw: RawAppConfig) -> ResolvedAppConfig:

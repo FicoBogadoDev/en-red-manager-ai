@@ -5,7 +5,10 @@ from typing import Annotated, Literal, Union
 from pydantic import BaseModel, Field
 
 from manager_ai.adapters.llm.text_generation.wiring import TextGenerationLLMConfig
-from manager_ai.adapters.qualification.wiring import HeuristicQualificationConfig
+from manager_ai.adapters.qualification.wiring import (
+    DEFAULT_SERVICE_CATALOG_PATH,
+    HeuristicQualificationConfig,
+)
 from manager_ai.wiring.settings import (
     ExtractorConfig,
     HeuristicMessageClassifierConfig,
@@ -47,11 +50,13 @@ RawReplyGenerationConfig = Annotated[
 class RawLLMQualificationConfig(BaseModel):
     type: Literal["llm"]
     llm: TextGenerationLLMConfig
+    catalog_path: str = DEFAULT_SERVICE_CATALOG_PATH
 
 
 class RawSharedLLMQualificationConfig(BaseModel):
     type: Literal["shared_llm"]
     shared: str
+    catalog_path: str = DEFAULT_SERVICE_CATALOG_PATH
 
 
 RawQualificationConfig = Annotated[

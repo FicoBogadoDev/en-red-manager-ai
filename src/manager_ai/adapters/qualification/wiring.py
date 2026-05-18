@@ -16,16 +16,22 @@ from manager_ai.adapters.llm.text_generation.wiring import (
     TextGenerationLLMConfig,
     build_llm,
 )
+from manager_ai.adapters.qualification.catalog import (
+    DEFAULT_SERVICE_CATALOG_PATH,
+    load_service_catalog,
+)
 from manager_ai.ports.qualification import QualificationPort
 
 
 class HeuristicQualificationConfig(BaseModel):
     type: Literal["heuristic"]
+    catalog_path: str = DEFAULT_SERVICE_CATALOG_PATH
 
 
 class LLMQualificationConfig(BaseModel):
     type: Literal["llm"]
     llm: TextGenerationLLMConfig
+    catalog_path: str = DEFAULT_SERVICE_CATALOG_PATH
 
 
 QualificationConfig = Annotated[
@@ -35,14 +41,15 @@ QualificationConfig = Annotated[
 
 
 def build_qualification(cfg: QualificationConfig) -> QualificationPort:
+    catalog = load_service_catalog(cfg.catalog_path)
     match cfg:
         case LLMQualificationConfig():
             from manager_ai.adapters.qualification.llm import LLMQualificationAdapter
 
-            return LLMQualificationAdapter(llm=build_llm(cfg.llm))
+            return LLMQualificationAdapter(llm=build_llm(cfg.llm), catalog=catalog)
         case HeuristicQualificationConfig():
             from manager_ai.adapters.qualification.heuristic import (
                 HeuristicQualificationAdapter,
             )
 
-            return HeuristicQualificationAdapter()
+            return HeuristicQualificationAdapter(catalog=catalog)

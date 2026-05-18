@@ -16,6 +16,7 @@ def test_reference_config_parses() -> None:
     assert config.messaging.type == "log"
     assert config.storage.type == "json"
     assert config.qualification.type == "heuristic"
+    assert config.qualification.catalog_path == "config/service-catalog.md"
 
 
 def test_dev_no_api_builds_agent() -> None:
@@ -40,6 +41,7 @@ def test_dev_ui_config_parses() -> None:
     assert config.reply_generation.type == "llm"
     assert config.reply_generation.llm.type == "ollama"
     assert config.qualification.type == "heuristic"
+    assert config.qualification.catalog_path == "config/service-catalog.md"
 
 
 def test_reply_generation_can_use_local_child_llm(tmp_path: Path) -> None:
@@ -92,6 +94,7 @@ def test_qualification_can_use_shared_llm(tmp_path: Path) -> None:
                 "[qualification]",
                 '\ttype = "shared_llm"',
                 '\tshared = "llm"',
+                '\tcatalog_path = "config/service-catalog.md"',
                 "",
             ]
         ),
@@ -105,6 +108,7 @@ def test_qualification_can_use_shared_llm(tmp_path: Path) -> None:
     assert raw_config.qualification.type == "shared_llm"
     assert config.qualification.type == "llm"
     assert config.qualification.llm.type == "log"
+    assert config.qualification.catalog_path == "config/service-catalog.md"
     assert agent is not None
 
 

@@ -166,3 +166,30 @@ Keep entries practical:
 
 - `uv run pytest tests/unit/src -q` passed with 30 passing tests and 2 skipped tests.
 - Targeted mypy checks for the Claude adapter, text-generation wiring, and Claude adapter test passed.
+
+## 2026-05-18
+
+### Catalog-driven qualification
+
+- Reworked qualification around item-level service scope so one message can contain both an accepted En Red safety-net request and unsupported extras.
+- Extended `ServiceQualification` to keep the existing top-level decision while also carrying `service_items`, `unsupported_items`, and `unknown_items`.
+- Updated the workflow so mixed supported/unsupported turns keep the active job alive, record the unsupported extra, briefly decline only that extra, and continue evidence intake.
+- Added catalog-driven qualification wiring with `catalog_path` so the service boundary can change without code changes.
+
+### Human-editable service catalog
+
+- Replaced the initial structured TOML catalog idea with `config/service-catalog.md`, a Spanish Markdown file intended for company-side editing.
+- Kept the production path LLM-first: the LLM qualifier receives the Markdown catalog as written.
+- Kept the heuristic path as a lightweight internal-test fallback that parses simple Markdown bullets into searchable terms.
+- Updated `config/reference.toml` and `docs/configuration.md` so the default catalog path is `config/service-catalog.md`.
+
+### Documentation and verification
+
+- Updated maintained docs with the new qualification behavior and implementation reality: `chatbot-behavior.md`, `implementation-architecture.md`, and `active-context.md`.
+- Added focused tests for Markdown catalog parsing, catalog-injected heuristic behavior, LLM prompt/catalog behavior, mixed supported/unsupported workflow behavior, and config loading.
+- `uv run pytest tests/unit/src/adapters/test_qualification.py tests/unit/src/agent/test_workflow_agent.py tests/unit/src/test_config_loading.py -q` passed with 35 tests.
+
+### Follow-up
+
+- Consider adding validation or preview tooling before non-developers maintain `config/service-catalog.md` directly.
+- Build a small evaluation set for LLM qualification before relying on catalog edits in production-like conversations.

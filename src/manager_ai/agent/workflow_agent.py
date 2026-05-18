@@ -33,7 +33,11 @@ from manager_ai.ports.conversation_reply import ConversationReplyPort
 from manager_ai.adapters.llm.text_generation.wiring import LLMTextGenerationPort
 from manager_ai.ports.message_classifier import MessageClassifierPort
 from manager_ai.ports.messaging import MessagingPort
-from manager_ai.ports.qualification import QualificationDecision, QualificationPort
+from manager_ai.ports.qualification import (
+    QualifiedServiceItem,
+    QualificationDecision,
+    QualificationPort,
+)
 from manager_ai.ports.quote_drafting import QuoteDraftingPort
 from manager_ai.ports.reminder import ReminderPort
 from manager_ai.ports.scheduling import SchedulingPort
@@ -263,6 +267,36 @@ class Agent:
             self._persist(thread, job, "service_clarification_requested")
             return WorkflowResult(thread=thread, outbound_messages=outbound_messages)
 
+        qualification_side_reply: str | None = None
+        if service_qualification.unsupported_items:
+            qualification_side_reply = (
+                service_qualification.side_reply
+                or self._qualification_side_reply(
+                    service_qualification.service_items,
+                    service_qualification.unsupported_items,
+                )
+            )
+            thread.events.append(
+                ConversationEvent(
+                    kind="unsupported_service_extra_detected",
+                    job_id=job.id,
+                    summary="Message included unsupported extras while preserving the active job",
+                    payload={
+                        "route": route,
+                        "intent": intent.value,
+                        "unsupported_items": [
+                            item.model_dump(mode="json")
+                            for item in service_qualification.unsupported_items
+                        ],
+                        "service_items": [
+                            item.model_dump(mode="json")
+                            for item in service_qualification.service_items
+                        ],
+                        "qualification_reason": service_qualification.reason,
+                    },
+                )
+            )
+
         job = self._structured_extractor.extract(
             thread=thread,
             job=job,
@@ -423,6 +457,15 @@ class Agent:
             else:
                 thread.status = ThreadStatus.ACTIVE
 
+        if qualification_side_reply and outbound_messages:
+            outbound_messages[0] = outbound_messages[0].model_copy(
+                update={"text": f"{qualification_side_reply} {outbound_messages[0].text}"}
+            )
+        elif qualification_side_reply:
+            outbound_messages.append(
+                OutboundMessage(to=thread.phone, text=qualification_side_reply)
+            )
+
         escalations = maybe_escalate(thread=thread, job=job)
         if escalations:
             thread.status = ThreadStatus.ESCALATED
@@ -525,6 +568,36 @@ class Agent:
         if intent in {IntentType.PROVIDE_EVIDENCE, IntentType.NEW_INQUIRY, IntentType.UNKNOWN, IntentType.CHIT_CHAT}:
             return "evidence_intake"
         return "mixed"
+
+    def _qualification_side_reply(
+        self,
+        service_items: list[QualifiedServiceItem],
+        unsupported_items: list[QualifiedServiceItem],
+    ) -> str:
+        accepted_labels = [
+            item.reply_label or item.normalized_service
+            for item in service_items
+        ]
+        unsupported_phrases = [
+            item.rejection_phrase
+            for item in unsupported_items
+            if item.rejection_phrase
+        ]
+        if not unsupported_phrases:
+            unsupported_labels = [
+                item.reply_label or item.normalized_service
+                for item in unsupported_items
+            ]
+            unsupported_phrases = [
+                f"No trabajamos {', '.join(dict.fromkeys(unsupported_labels))}."
+            ]
+        accepted_part = (
+            f"Podemos ayudarte con {', '.join(dict.fromkeys(accepted_labels))}."
+            if accepted_labels
+            else "Seguimos con la red de seguridad."
+        )
+        rejected_part = " ".join(dict.fromkeys(unsupported_phrases))
+        return f"{accepted_part} {rejected_part}"
 
     def _record_outbound_events(
         self,

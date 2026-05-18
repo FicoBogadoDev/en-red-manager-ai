@@ -38,7 +38,7 @@ The main runtime entry point is the workflow-oriented `Agent` in `src/manager_ai
 - `src/manager_ai/wiring/`
   App-level raw/resolved config models, resolution logic, focused builder modules, and top-level app assembly
 - `config/`
-  Runnable TOML runtime variants plus `reference.toml` as a shape catalog
+  Runnable TOML runtime variants, `reference.toml` as a shape catalog, and human-editable service policy files
 - `nice_gui_app/`
   Local UI for browsing and driving saved conversations
 
@@ -125,6 +125,8 @@ Current practical config variants:
   Additional local variant for UI-oriented work
 - `config/reference.toml`
   Non-runnable reference catalog showing the supported TOML section shapes and fields
+- `config/service-catalog.md`
+  Human-editable Markdown catalog used by qualification to describe offered services, unsupported adjacent services, clearly out-of-scope requests, and ambiguous service-fit cases
 
 The current config parsing and assembly path is split between:
 
@@ -218,14 +220,23 @@ Qualification is an injected dependency behind `QualificationPort`.
 
 Current configured implementations:
 
-- `heuristic`: deterministic keyword and existing-job evidence checks
-- `llm`: structured LLM classification returning `service`, `not_service`, or `unclear`
+- `heuristic`: lightweight catalog-text matching and existing-job evidence checks for internal testing
+- `llm`: structured LLM classification returning `service`, `not_service`, or `unclear`, plus item-level service scope data
+
+Both implementations load the service boundary from `config/service-catalog.md` by default. The LLM qualifier receives the Markdown catalog as written so company-side edits can change production behavior without changing code. The heuristic qualifier parses the same bullets into simple searchable terms, but it is intentionally not treated as production-grade service understanding.
+
+`ServiceQualification` keeps the top-level decision for workflow compatibility and also carries item lists:
+
+- `service_items` for in-scope service items
+- `unsupported_items` for adjacent or clearly unsupported items
+- `unknown_items` for ambiguous items that should lead to clarification
 
 The workflow agent owns the state transitions after the qualifier returns a decision:
 
 - `service` continues into structured extraction and evidence intake
 - `not_service` disqualifies the job and sends the not-qualified reply
 - `unclear` keeps the job open and asks a service-fit clarification question
+- `service` with unsupported items records the unsupported extra, keeps the job active, and prefixes the normal next reply with a short decline for only that extra
 
 ### Job selection
 
